@@ -1,0 +1,36 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js build output
+.next/
+out/
+
+# production build
+build/
+dist/
+
+# env files (secrets — never commit)
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# testing
+coverage/
+test-results/
+playwright-report/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / OS
+.DS_Store
+Thumbs.db
