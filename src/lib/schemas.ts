@@ -13,12 +13,9 @@ export const CategorySlug = z.enum([
 ]);
 export type CategorySlugType = z.infer<typeof CategorySlug>;
 
-const categoryMap = (value: z.ZodTypeAny) =>
+const categoryMap = <T extends z.ZodTypeAny>(value: T) =>
   z.object(
-    Object.fromEntries(CategorySlug.options.map((s) => [s, value])) as Record<
-      CategorySlugType,
-      typeof value
-    >,
+    Object.fromEntries(CategorySlug.options.map((s) => [s, value])) as Record<CategorySlugType, T>,
   );
 
 export const CatalogueItem = z.object({
