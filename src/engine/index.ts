@@ -155,3 +155,98 @@ export function calculate(
 
   return result;
 }
+
+const MAX_NUDGE_STEPS = 25;
+const NUDGE_STEP = new Decimal("0.01");
+
+export function suggestPrice(
+  input: Omit<SimulationInput, "sellingPriceLocal">,
+  fx: FxInput,
+  rules: MarketRulesType,
+  targetMarginPct: number,
+): { price: string; steps: number } | null {
+  const market = MARKET_MODULES[input.market];
+  const marketRules = rules[input.market];
+  const fxRate = new Decimal(fx.rate);
+  const goods = r2(new Decimal(input.usd).times(fxRate));
+  const shipping = r2(input.inboundShippingLocal);
+  const dutyPct = new Decimal(input.dutyPct);
+  const duty = market.computeDuty(goods, dutyPct);
+  const above = market.isAboveThreshold(goods, shipping);
+  const importTax = market.computeImportTax(goods, shipping, duty, above);
+  const landed = input.taxRegistered
+    ? goods.plus(shipping).plus(duty)
+    : goods.plus(shipping).plus(duty).plus(importTax);
+
+  const k = input.taxRegistered ? new Decimal(1).div(1 + market.taxRatePct / 100) : new Decimal(1);
+
+  const referralFeePct = new Decimal(input.referralFeePct).div(100);
+  const feeTaxRate = input.taxRegistered ? new Decimal(0) : new Decimal(market.taxRatePct).div(100);
+  let fEff: Decimal;
+  let fixedCosts: Decimal;
+
+  switch (input.platform) {
+    case "amazon": {
+      const rate = referralFeePct.times(new Decimal(1).plus(feeTaxRate));
+      const perItem =
+        input.amazonPlan === "individual"
+          ? new Decimal(marketRules.platforms.amazon.individualPerItemFee)
+          : new Decimal(0);
+      fEff = rate;
+      fixedCosts = perItem;
+      break;
+    }
+    case "ebay": {
+      const eb = marketRules.platforms.ebay;
+      const rate = input.ebayFreeTier ? new Decimal(0) : referralFeePct;
+      fEff = rate.times(new Decimal(1).plus(feeTaxRate));
+      const regFee =
+        eb.regulatoryFeePct > 0 && !input.ebayFreeTier
+          ? new Decimal(eb.regulatoryFeePct).div(100)
+          : new Decimal(0);
+      fEff = fEff.plus(regFee.times(new Decimal(1).plus(feeTaxRate)));
+      fixedCosts = new Decimal(0);
+      break;
+    }
+    case "shopify": {
+      const plan = marketRules.platforms.shopify.payments[input.shopifyPlan];
+      fEff = new Decimal(plan.pct).div(100).times(new Decimal(1).plus(feeTaxRate));
+      fixedCosts = new Decimal(plan.fixed)
+        .times(new Decimal(1).plus(feeTaxRate))
+        .plus(r2(input.packagingLocal))
+        .plus(r2(input.adSpendLocal));
+      break;
+    }
+    case "other":
+      fEff = new Decimal(0);
+      fixedCosts = r2(input.packagingLocal).plus(r2(input.adSpendLocal));
+      break;
+  }
+
+  if (input.platform !== "shopify") {
+    fixedCosts = fixedCosts.plus(r2(input.packagingLocal)).plus(r2(input.adSpendLocal));
+  }
+
+  const m = new Decimal(targetMarginPct).div(100);
+  const denominator = k.minus(fEff).minus(m);
+
+  if (denominator.lte(0)) {
+    return null;
+  }
+
+  let price = r2(fixedCosts.plus(landed).div(denominator));
+  let steps = 0;
+
+  while (steps < MAX_NUDGE_STEPS) {
+    const result = calculate({ ...input, sellingPriceLocal: price.toFixed(2) }, fx, rules);
+    const marginOk = new Decimal(result.marginPct).gte(targetMarginPct);
+    const profitOk = new Decimal(result.netProfit).gte(0);
+    if (marginOk && profitOk) {
+      return { price: price.toFixed(2), steps };
+    }
+    price = price.plus(NUDGE_STEP);
+    steps += 1;
+  }
+
+  return null;
+}
