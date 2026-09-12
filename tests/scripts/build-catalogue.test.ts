@@ -1,5 +1,5 @@
 // tests/scripts/build-catalogue.test.ts
-import { describe, expect, it, beforeAll } from "vitest";
+import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import {
@@ -84,6 +84,10 @@ describe("build-catalogue CLI, run against the real price list", () => {
     execSync("pnpm tsx scripts/build-catalogue.ts", { stdio: "pipe" });
   });
 
+  afterAll(() => {
+    writeFileSync(outputPath, before);
+  });
+
   it("produces a schema-valid catalogue", () => {
     const raw = JSON.parse(readFileSync(outputPath, "utf-8"));
     expect(() => Catalogue.parse(raw)).not.toThrow();
@@ -108,7 +112,5 @@ describe("build-catalogue CLI, run against the real price list", () => {
     expect(() =>
       execSync("pnpm tsx scripts/build-catalogue.ts --verify", { stdio: "pipe" }),
     ).toThrow();
-    // restore
-    writeFileSync(outputPath, before);
   });
 });

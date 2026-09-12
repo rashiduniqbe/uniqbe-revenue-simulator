@@ -13,6 +13,14 @@ export const CategorySlug = z.enum([
 ]);
 export type CategorySlugType = z.infer<typeof CategorySlug>;
 
+const categoryMap = (value: z.ZodTypeAny) =>
+  z.object(
+    Object.fromEntries(CategorySlug.options.map((s) => [s, value])) as Record<
+      CategorySlugType,
+      typeof value
+    >,
+  );
+
 export const CatalogueItem = z.object({
   code: z.string().regex(/^[A-Z]{2}\d{5}$/),
   brand: z.string().min(1),
@@ -43,7 +51,7 @@ export type CatalogueType = z.infer<typeof Catalogue>;
 
 const AmazonFees = z.object({
   referralFeePctDefault: z.number(),
-  referralFeePctByCategory: z.record(CategorySlug, z.number()),
+  referralFeePctByCategory: categoryMap(z.number()),
   minReferralFee: z.number().optional(),
   individualPerItemFee: z.number(),
   professionalMonthlyFee: z.number(),
@@ -52,7 +60,7 @@ const AmazonFees = z.object({
 
 const EbayFees = z.object({
   referralFeePctDefault: z.number(),
-  referralFeePctByCategory: z.record(CategorySlug, z.number()),
+  referralFeePctByCategory: categoryMap(z.number()),
   regulatoryFeePct: z.number(),
   perOrderFee: z.object({
     thresholdLocal: z.number(),
@@ -93,7 +101,7 @@ const MarketBlock = z.object({
   deMinimisComparandNote: z.string().optional(),
   importTaxBase: z.string(),
   liableParty: z.string(),
-  dutyPctByCategory: z.record(CategorySlug, z.number()),
+  dutyPctByCategory: categoryMap(z.number()),
   platforms: z.object({
     amazon: AmazonFees,
     ebay: EbayFees,

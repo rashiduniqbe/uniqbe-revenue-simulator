@@ -6,9 +6,15 @@ export const Money = Decimal.clone({
 });
 export type MoneyType = InstanceType<typeof Money>;
 
-export function r2(value: Decimal.Value): MoneyType {
+export type MoneyInput = string | MoneyType;
+
+export function r2(value: MoneyInput): MoneyType {
   const rounded = new Money(value).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   return rounded.isZero() ? new Money(0) : rounded;
+}
+
+export function toMoneyString(value: MoneyInput): string {
+  return r2(value).toFixed(2);
 }
 
 export function assertBreakdownSums(lines: string[], total: string): void {
