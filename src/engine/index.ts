@@ -157,6 +157,7 @@ export function calculate(
 }
 
 const MAX_NUDGE_STEPS = 25;
+const MAX_BACKWARD_STEPS = 50;
 const NUDGE_STEP = new Decimal("0.01");
 
 export function suggestPrice(
@@ -193,7 +194,7 @@ export function suggestPrice(
           ? new Decimal(marketRules.platforms.amazon.individualPerItemFee)
           : new Decimal(0);
       fEff = rate;
-      fixedCosts = perItem;
+      fixedCosts = perItem.times(new Decimal(1).plus(feeTaxRate));
       break;
     }
     case "ebay": {
@@ -242,7 +243,32 @@ export function suggestPrice(
     const marginOk = new Decimal(result.marginPct).gte(targetMarginPct);
     const profitOk = new Decimal(result.netProfit).gte(0);
     if (marginOk && profitOk) {
-      return { price: price.toFixed(2), steps };
+      // If we had to nudge forward to reach a passing price, walk backward to find
+      // the true minimum, correcting for rounding noise in calculate()'s computations
+      let minPrice = price;
+      let backwardSteps = 0;
+
+      if (steps > 0) {
+        while (backwardSteps < MAX_BACKWARD_STEPS) {
+          const testPrice = minPrice.minus(NUDGE_STEP);
+          const testResult = calculate(
+            { ...input, sellingPriceLocal: testPrice.toFixed(2) },
+            fx,
+            rules,
+          );
+          const testMarginOk = new Decimal(testResult.marginPct).gte(targetMarginPct);
+          const testProfitOk = new Decimal(testResult.netProfit).gte(0);
+
+          if (testMarginOk && testProfitOk) {
+            minPrice = testPrice;
+            backwardSteps += 1;
+          } else {
+            break;
+          }
+        }
+      }
+
+      return { price: minPrice.toFixed(2), steps: steps + backwardSteps };
     }
     price = price.plus(NUDGE_STEP);
     steps += 1;
