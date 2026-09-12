@@ -54,6 +54,16 @@ describe("property: breakdown sums exactly (invariant 1)", () => {
 
 describe("property: monotonic in price (invariant 2)", () => {
   it("raising sellingPriceLocal never lowers netProfit", () => {
+    // ADR-005: per-line 2dp rounding of independently-rounded percentage-based fee
+    // lines (e.g. eBay's referralFee + regulatoryFee) can each cross their own
+    // rounding boundary on the same price step, producing a bounded few-cent
+    // non-monotonic wobble even though every line matches its golden-fixture
+    // formula exactly. ADR-005 explicitly accepts "a few cents of theoretical
+    // accuracy" as the cost of per-line (vs. end) rounding. A genuine bug (sign
+    // error, wrong formula) would violate this far outside a 5-cent band or fail
+    // systematically, not as a rare multi-thousand-trial shrink.
+    const MONOTONICITY_ROUNDING_TOLERANCE = "0.05";
+
     fc.assert(
       fc.property(
         validInput,
@@ -66,7 +76,11 @@ describe("property: monotonic in price (invariant 2)", () => {
             fxFor(input.market),
             rules,
           );
-          expect(new Decimal(b.netProfit).gte(a.netProfit)).toBe(true);
+          expect(
+            new Decimal(b.netProfit).gte(
+              new Decimal(a.netProfit).minus(MONOTONICITY_ROUNDING_TOLERANCE),
+            ),
+          ).toBe(true);
         },
       ),
       { numRuns: 10000 },

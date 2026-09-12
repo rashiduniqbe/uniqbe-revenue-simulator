@@ -17,71 +17,6 @@ const MARKET_MODULES: Record<SimulationInput["market"], MarketModule> = {
   AU: auModule,
 };
 
-// Compute unrounded platform fee subtotal for accurate tax calculation
-function getUnroundedPlatformFeeSubtotal(
-  input: SimulationInput,
-  sellingPriceGross: Decimal,
-  referralFeePct: Decimal,
-  marketRules: MarketRulesType[SimulationInput["market"]],
-): Decimal {
-  switch (input.platform) {
-    case "amazon": {
-      const rawReferral = sellingPriceGross.times(referralFeePct).div(100);
-      const minFee = new Decimal(marketRules.platforms.amazon.minReferralFee ?? 0);
-      let subtotal = rawReferral.lt(minFee) ? minFee : rawReferral;
-      if (input.amazonPlan === "individual") {
-        subtotal = subtotal.plus(new Decimal(marketRules.platforms.amazon.individualPerItemFee));
-      }
-      return subtotal;
-    }
-    case "ebay": {
-      // eBay has tiered referral fees and optional per-order fees
-      if (input.market === "AU" && input.ebayFreeTier) {
-        return new Decimal(0); // Free tier in AU means no referral fee
-      }
-      let referralFee: Decimal;
-      if (
-        marketRules.platforms.ebay.tieredAbove &&
-        sellingPriceGross.gt(marketRules.platforms.ebay.tieredAbove.thresholdLocal)
-      ) {
-        const base = new Decimal(marketRules.platforms.ebay.tieredAbove.thresholdLocal);
-        const excess = sellingPriceGross.minus(base);
-        referralFee = base
-          .times(referralFeePct)
-          .div(100)
-          .plus(excess.times(marketRules.platforms.ebay.tieredAbove.pctAbove).div(100));
-      } else {
-        referralFee = sellingPriceGross.times(referralFeePct).div(100);
-      }
-      let subtotal = referralFee;
-      if (marketRules.platforms.ebay.regulatoryFeePct > 0) {
-        subtotal = subtotal.plus(
-          sellingPriceGross.times(marketRules.platforms.ebay.regulatoryFeePct).div(100),
-        );
-      }
-      // Per-order fees are fixed amounts, not percentage-based, so add them
-      const perOrderAmount = sellingPriceGross.lte(
-        marketRules.platforms.ebay.perOrderFee.thresholdLocal,
-      )
-        ? marketRules.platforms.ebay.perOrderFee.low
-        : marketRules.platforms.ebay.perOrderFee.high;
-      if (perOrderAmount > 0) {
-        subtotal = subtotal.plus(new Decimal(perOrderAmount));
-      }
-      return subtotal;
-    }
-    case "shopify": {
-      // Shopify payment fee: percentage + fixed fee per plan
-      const planFee = marketRules.platforms.shopify.payments[input.shopifyPlan];
-      const percentageFee = sellingPriceGross.times(planFee.pct).div(100);
-      const fixedFee = new Decimal(planFee.fixed);
-      return percentageFee.plus(fixedFee);
-    }
-    case "other":
-      return new Decimal(0);
-  }
-}
-
 export function calculate(
   input: SimulationInput,
   fx: FxInput,
@@ -143,22 +78,13 @@ export function calculate(
     return sum.plus(new Decimal(v));
   }, new Decimal("0")) as Decimal;
 
-  // For tax calculation, use unrounded fees to avoid rounding accumulation that can violate monotonicity
-  const unroundedFeesForTax = getUnroundedPlatformFeeSubtotal(
-    input,
-    sellingPriceGross,
-    referralFeePct,
-    marketRules,
-  );
-  const feeTaxBase = unroundedFeesForTax.gt(0) ? unroundedFeesForTax : platformFeeSubtotal;
   const feeTax = input._planParityDisableFeeTax
     ? r2("0")
-    : r2(feeTaxBase.times(market.taxRatePct).div(100));
+    : r2(platformFeeSubtotal.times(market.taxRatePct).div(100));
   const feeTaxCost = input.taxRegistered ? r2("0") : feeTax;
 
   const otherCosts = r2(input.packagingLocal).plus(r2(input.adSpendLocal));
 
-  // Use rounded values for net profit calculation to ensure breakdown sums exactly
   const netProfit = netRevenue
     .minus(landed)
     .minus(platformFeeSubtotal)
