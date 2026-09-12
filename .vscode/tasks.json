@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "dev", "type": "shell", "command": "pnpm dev", "problemMatcher": [] },
+    { "label": "verify", "type": "shell", "command": "pnpm verify", "problemMatcher": [] },
+    {
+      "label": "catalogue:build",
+      "type": "shell",
+      "command": "pnpm catalogue:build",
+      "problemMatcher": []
+    }
+  ]
+}

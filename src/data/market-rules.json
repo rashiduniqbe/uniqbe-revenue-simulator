@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "schemaVersion": 1,
+    "sourceSection": "Plan \u00a76.2",
+    "verificationStatus": "INDICATIVE \u2014 Phase 0 must re-verify every rate against Amazon Seller Central, eBay Seller Hub, HMRC Trade Tariff and ABF before launch",
+    "lastVerified": null,
+    "specVersion": "1.1",
+    "changeLog": [
+      "1.1 (26 Aug 2026): AU deMinimisComparand set to goods+freight.",
+      "1.2 (26 Aug 2026): AU deMinimisComparand reverted to goods-only per Uniqbe instruction. Provisional (\"at the moment\") \u2014 pending customs-broker confirmation.",
+      "1.1: Removed user-facing fee-tax toggle; taxRegistered governs recoverability only."
+    ]
+  },
+  "UK": {
+    "marketLabel": "United Kingdom",
+    "currency": "GBP",
+    "locale": "en-GB",
+    "consumptionTaxName": "VAT",
+    "consumptionTaxRatePct": 20,
+    "deMinimisLocal": null,
+    "deMinimisNote": "\u00a3135 threshold exists in HMRC rules but is not applied in practice under Uniqbe's stated policy (Plan \u00a76.3). Import VAT is always modelled.",
+    "importTaxBase": "goods + inboundShipping + duty",
+    "liableParty": "reseller",
+    "dutyPctByCategory": {
+      "mobile-phone": 0,
+      "tablet": 0,
+      "audio": 0,
+      "wearable": 0,
+      "camera": 0,
+      "gaming": 0,
+      "smart-home": 0,
+      "computer-accessory": 0,
+      "home-appliance": 0
+    },
+    "platforms": {
+      "amazon": {
+        "referralFeePctDefault": 8,
+        "referralFeePctByCategory": {
+          "mobile-phone": 7,
+          "tablet": 7,
+          "camera": 7,
+          "computer-accessory": 7,
+          "audio": 8,
+          "wearable": 8,
+          "gaming": 8,
+          "smart-home": 8,
+          "home-appliance": 15
+        },
+        "minReferralFee": 0.25,
+        "individualPerItemFee": 0.75,
+        "professionalMonthlyFee": 25.0,
+        "feesAreTaxable": true
+      },
+      "ebay": {
+        "referralFeePctDefault": 9,
+        "referralFeePctByCategory": {
+          "mobile-phone": 8,
+          "tablet": 8,
+          "computer-accessory": 8,
+          "audio": 9,
+          "wearable": 9,
+          "camera": 9,
+          "gaming": 9,
+          "smart-home": 9,
+          "home-appliance": 9
+        },
+        "regulatoryFeePct": 0.42,
+        "perOrderFee": {
+          "thresholdLocal": 10,
+          "low": 0.3,
+          "high": 0.4
+        },
+        "individualPerItemFee": 0,
+        "feesAreTaxable": true
+      },
+      "shopify": {
+        "referralFeePctDefault": 0,
+        "monthlyByPlan": {
+          "basic": 25,
+          "grow": 65,
+          "advanced": 344
+        },
+        "payments": {
+          "basic": {
+            "pct": 2.0,
+            "fixed": 0.25
+          },
+          "grow": {
+            "pct": 1.7,
+            "fixed": 0.25
+          },
+          "advanced": {
+            "pct": 1.5,
+            "fixed": 0.25
+          }
+        },
+        "feesAreTaxable": true,
+        "requiresAdSpendInput": true
+      },
+      "other": {
+        "referralFeePctDefault": 0,
+        "feesAreTaxable": false
+      }
+    }
+  },
+  "AU": {
+    "marketLabel": "Australia",
+    "currency": "AUD",
+    "locale": "en-AU",
+    "consumptionTaxName": "GST",
+    "consumptionTaxRatePct": 10,
+    "deMinimisLocal": 1000,
+    "deMinimisNote": "Below A$1,000 no GST is collected at the border and Uniqbe collects none at checkout (Plan \u00a76.3). Policy position, not permanent law \u2014 keep this value editable.",
+    "deMinimisComparand": "goods",
+    "importTaxBase": "goods + inboundShipping + duty",
+    "liableParty": "reseller",
+    "dutyPctByCategory": {
+      "mobile-phone": 0,
+      "tablet": 0,
+      "audio": 0,
+      "wearable": 0,
+      "camera": 0,
+      "gaming": 0,
+      "smart-home": 0,
+      "computer-accessory": 0,
+      "home-appliance": 5
+    },
+    "platforms": {
+      "amazon": {
+        "referralFeePctDefault": 8,
+        "referralFeePctByCategory": {
+          "mobile-phone": 8,
+          "tablet": 8,
+          "audio": 8,
+          "wearable": 8,
+          "camera": 8,
+          "gaming": 8,
+          "smart-home": 8,
+          "computer-accessory": 8,
+          "home-appliance": 15
+        },
+        "individualPerItemFee": 0.99,
+        "professionalMonthlyFee": 49.95,
+        "feesAreTaxable": true
+      },
+      "ebay": {
+        "referralFeePctDefault": 13.4,
+        "referralFeePctByCategory": {
+          "mobile-phone": 13.4,
+          "tablet": 13.4,
+          "audio": 13.4,
+          "wearable": 13.4,
+          "camera": 13.4,
+          "gaming": 13.4,
+          "smart-home": 13.4,
+          "computer-accessory": 13.4,
+          "home-appliance": 13.4
+        },
+        "tieredAbove": {
+          "thresholdLocal": 4000,
+          "pctAbove": 2.5
+        },
+        "regulatoryFeePct": 0,
+        "perOrderFee": {
+          "thresholdLocal": 10,
+          "low": 0,
+          "high": 0
+        },
+        "freeTierTrailingSalesLocal": 25000,
+        "individualPerItemFee": 0,
+        "feesAreTaxable": true
+      },
+      "shopify": {
+        "referralFeePctDefault": 0,
+        "monthlyByPlan": {
+          "basic": 56,
+          "grow": 149,
+          "advanced": 575
+        },
+        "payments": {
+          "basic": {
+            "pct": 1.75,
+            "fixed": 0.3
+          },
+          "grow": {
+            "pct": 1.6,
+            "fixed": 0.3
+          },
+          "advanced": {
+            "pct": 1.4,
+            "fixed": 0.3
+          }
+        },
+        "subscriptionGstUnlessAbn": true,
+        "feesAreTaxable": true,
+        "requiresAdSpendInput": true
+      },
+      "other": {
+        "referralFeePctDefault": 0,
+        "feesAreTaxable": false
+      }
+    },
+    "deMinimisComparandNote": "Set to goods-only by Uniqbe instruction, 26 Aug 2026, described as provisional. Accepts \"goods\" or \"goods+freight\". Switching this value is the ONLY change required if a customs broker advises otherwise \u2014 plus regenerating fixtures GF-06a/b/c. Engine reads this at runtime; the rule is never inlined in code."
+  }
+}
