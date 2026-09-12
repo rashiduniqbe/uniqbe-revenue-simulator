@@ -1,714 +1,714 @@
 {
-  "schemaVersion": 1,
-  "note": "Frozen FX rates. These are the authoritative regression vectors \u2014 the TypeScript engine must reproduce every value to the cent.",
-  "roundingPolicy": "Decimal arithmetic; ROUND_HALF_UP to 2dp at each line item; breakdown lines sum exactly to the total.",
-  "cases": [
-    {
-      "id": "GF-01",
-      "description": "Plan \u00a77 parity \u2014 UK / Amazon / not VAT-reg / fee-VAT DISABLED. Must reproduce the worked example exactly.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 599.99,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual",
-        "_planParityDisableFeeTax": true
-      },
-      "expected": {
-        "goodsCostLocal": "343.73",
-        "inboundShipping": "12.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "71.15",
-        "importTaxReclaimable": false,
-        "landedCost": "426.88",
-        "sellingPriceGross": "599.99",
-        "outputTax": "0.00",
-        "netRevenue": "599.99",
-        "platformFees": {
-          "referralFee": "48.00",
-          "perItemPlanFee": "0.75"
-        },
-        "platformFeeSubtotal": "48.75",
-        "taxOnPlatformFees": "0.00",
-        "taxOnPlatformFeesCost": "0.00",
-        "otherCosts": "0.00",
-        "netProfit": "124.36",
-        "marginPct": "20.73",
-        "verdict": "profitable"
-      }
+ "schemaVersion": 1,
+ "note": "Frozen FX rates. These are the authoritative regression vectors \u2014 the TypeScript engine must reproduce every value to the cent.",
+ "roundingPolicy": "Decimal arithmetic; ROUND_HALF_UP to 2dp at each line item; breakdown lines sum exactly to the total.",
+ "cases": [
+  {
+   "id": "GF-01",
+   "description": "Plan \u00a77 parity \u2014 UK / Amazon / not VAT-reg / fee-VAT DISABLED. Must reproduce the worked example exactly.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 599.99,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual",
+    "_planParityDisableFeeTax": true
+   },
+   "expected": {
+    "goodsCostLocal": "343.73",
+    "inboundShipping": "12.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "71.15",
+    "importTaxReclaimable": false,
+    "landedCost": "426.88",
+    "sellingPriceGross": "599.99",
+    "outputTax": "0.00",
+    "netRevenue": "599.99",
+    "platformFees": {
+     "referralFee": "48.00",
+     "perItemPlanFee": "0.75"
     },
-    {
-      "id": "GF-02",
-      "description": "UK / Amazon / not VAT-reg / fee-VAT ENABLED (engine default). Shows the \u00a77 shortfall.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 599.99,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "343.73",
-        "inboundShipping": "12.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "71.15",
-        "importTaxReclaimable": false,
-        "landedCost": "426.88",
-        "sellingPriceGross": "599.99",
-        "outputTax": "0.00",
-        "netRevenue": "599.99",
-        "platformFees": {
-          "referralFee": "48.00",
-          "perItemPlanFee": "0.75"
-        },
-        "platformFeeSubtotal": "48.75",
-        "taxOnPlatformFees": "9.75",
-        "taxOnPlatformFeesCost": "9.75",
-        "otherCosts": "0.00",
-        "netProfit": "114.61",
-        "marginPct": "19.10",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "48.75",
+    "taxOnPlatformFees": "0.00",
+    "taxOnPlatformFeesCost": "0.00",
+    "otherCosts": "0.00",
+    "netProfit": "124.36",
+    "marginPct": "20.73",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-02",
+   "description": "UK / Amazon / not VAT-reg / fee-VAT ENABLED (engine default). Shows the \u00a77 shortfall.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 599.99,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "343.73",
+    "inboundShipping": "12.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "71.15",
+    "importTaxReclaimable": false,
+    "landedCost": "426.88",
+    "sellingPriceGross": "599.99",
+    "outputTax": "0.00",
+    "netRevenue": "599.99",
+    "platformFees": {
+     "referralFee": "48.00",
+     "perItemPlanFee": "0.75"
     },
-    {
-      "id": "GF-03",
-      "description": "UK / Amazon / VAT-REGISTERED. Import VAT reclaimable, output VAT due, fee VAT reclaimable.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": true,
-        "sellingPriceLocal": 599.99,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "343.73",
-        "inboundShipping": "12.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "71.15",
-        "importTaxReclaimable": true,
-        "landedCost": "355.73",
-        "sellingPriceGross": "599.99",
-        "outputTax": "100.00",
-        "netRevenue": "499.99",
-        "platformFees": {
-          "referralFee": "48.00",
-          "perItemPlanFee": "0.75"
-        },
-        "platformFeeSubtotal": "48.75",
-        "taxOnPlatformFees": "9.75",
-        "taxOnPlatformFeesCost": "0.00",
-        "otherCosts": "0.00",
-        "netProfit": "95.51",
-        "marginPct": "15.92",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "48.75",
+    "taxOnPlatformFees": "9.75",
+    "taxOnPlatformFeesCost": "9.75",
+    "otherCosts": "0.00",
+    "netProfit": "114.61",
+    "marginPct": "19.10",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-03",
+   "description": "UK / Amazon / VAT-REGISTERED. Import VAT reclaimable, output VAT due, fee VAT reclaimable.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": true,
+    "sellingPriceLocal": 599.99,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "343.73",
+    "inboundShipping": "12.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "71.15",
+    "importTaxReclaimable": true,
+    "landedCost": "355.73",
+    "sellingPriceGross": "599.99",
+    "outputTax": "100.00",
+    "netRevenue": "499.99",
+    "platformFees": {
+     "referralFee": "48.00",
+     "perItemPlanFee": "0.75"
     },
-    {
-      "id": "GF-04",
-      "description": "Plan \u00a77 parity \u2014 AU / Amazon / not GST-reg / BELOW A$1,000 threshold / fee-GST DISABLED.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 999.99,
-        "inboundShippingLocal": 20.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual",
-        "_planParityDisableFeeTax": true
-      },
-      "expected": {
-        "goodsCostLocal": "645.89",
-        "inboundShipping": "20.00",
-        "duty": "0.00",
-        "auAboveThreshold": false,
-        "importTax": "0.00",
-        "importTaxReclaimable": false,
-        "landedCost": "665.89",
-        "sellingPriceGross": "999.99",
-        "outputTax": "0.00",
-        "netRevenue": "999.99",
-        "platformFees": {
-          "referralFee": "80.00",
-          "perItemPlanFee": "0.99"
-        },
-        "platformFeeSubtotal": "80.99",
-        "taxOnPlatformFees": "0.00",
-        "taxOnPlatformFeesCost": "0.00",
-        "otherCosts": "0.00",
-        "netProfit": "253.11",
-        "marginPct": "25.31",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "48.75",
+    "taxOnPlatformFees": "9.75",
+    "taxOnPlatformFeesCost": "0.00",
+    "otherCosts": "0.00",
+    "netProfit": "95.51",
+    "marginPct": "15.92",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-04",
+   "description": "Plan \u00a77 parity \u2014 AU / Amazon / not GST-reg / BELOW A$1,000 threshold / fee-GST DISABLED.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 999.99,
+    "inboundShippingLocal": 20.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual",
+    "_planParityDisableFeeTax": true
+   },
+   "expected": {
+    "goodsCostLocal": "645.89",
+    "inboundShipping": "20.00",
+    "duty": "0.00",
+    "auAboveThreshold": false,
+    "importTax": "0.00",
+    "importTaxReclaimable": false,
+    "landedCost": "665.89",
+    "sellingPriceGross": "999.99",
+    "outputTax": "0.00",
+    "netRevenue": "999.99",
+    "platformFees": {
+     "referralFee": "80.00",
+     "perItemPlanFee": "0.99"
     },
-    {
-      "id": "GF-05",
-      "description": "AU / Amazon / not GST-reg / ABOVE A$1,000 threshold. The hot branch \u2014 must charge duty base GST.",
-      "product": {
-        "code": "AP13693",
-        "usd": 1650,
-        "name": "iPhone 17 Pro 1TB (Deep Blue)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 1650,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 2999.0,
-        "inboundShippingLocal": 25.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "2301.75",
-        "inboundShipping": "25.00",
-        "duty": "0.00",
-        "auAboveThreshold": true,
-        "importTax": "232.68",
-        "importTaxReclaimable": false,
-        "landedCost": "2559.43",
-        "sellingPriceGross": "2999.00",
-        "outputTax": "0.00",
-        "netRevenue": "2999.00",
-        "platformFees": {
-          "referralFee": "239.92",
-          "perItemPlanFee": "0.99"
-        },
-        "platformFeeSubtotal": "240.91",
-        "taxOnPlatformFees": "24.09",
-        "taxOnPlatformFeesCost": "24.09",
-        "otherCosts": "0.00",
-        "netProfit": "174.57",
-        "marginPct": "5.82",
-        "verdict": "marginal"
-      }
+    "platformFeeSubtotal": "80.99",
+    "taxOnPlatformFees": "0.00",
+    "taxOnPlatformFeesCost": "0.00",
+    "otherCosts": "0.00",
+    "netProfit": "253.11",
+    "marginPct": "25.31",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-05",
+   "description": "AU / Amazon / not GST-reg / ABOVE A$1,000 threshold. The hot branch \u2014 must charge duty base GST.",
+   "product": {
+    "code": "AP13693",
+    "usd": 1650,
+    "name": "iPhone 17 Pro 1TB (Deep Blue)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 1650,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 2999.0,
+    "inboundShippingLocal": 25.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "2301.75",
+    "inboundShipping": "25.00",
+    "duty": "0.00",
+    "auAboveThreshold": true,
+    "importTax": "232.68",
+    "importTaxReclaimable": false,
+    "landedCost": "2559.43",
+    "sellingPriceGross": "2999.00",
+    "outputTax": "0.00",
+    "netRevenue": "2999.00",
+    "platformFees": {
+     "referralFee": "239.92",
+     "perItemPlanFee": "0.99"
     },
-    {
-      "id": "GF-06a",
-      "description": "AU boundary JUST BELOW \u2014 goods A$999.99 (comparand = goods only). Must resolve BELOW.",
-      "product": {
-        "code": "SYNTHETIC-A",
-        "usd": 716.84,
-        "name": "Synthetic boundary product (below)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 716.84,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 1400.0,
-        "inboundShippingLocal": 20.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "999.99",
-        "inboundShipping": "20.00",
-        "duty": "0.00",
-        "auAboveThreshold": false,
-        "importTax": "0.00",
-        "importTaxReclaimable": false,
-        "landedCost": "1019.99",
-        "sellingPriceGross": "1400.00",
-        "outputTax": "0.00",
-        "netRevenue": "1400.00",
-        "platformFees": {
-          "referralFee": "112.00",
-          "perItemPlanFee": "0.99"
-        },
-        "platformFeeSubtotal": "112.99",
-        "taxOnPlatformFees": "11.30",
-        "taxOnPlatformFeesCost": "11.30",
-        "otherCosts": "0.00",
-        "netProfit": "255.72",
-        "marginPct": "18.27",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "240.91",
+    "taxOnPlatformFees": "24.09",
+    "taxOnPlatformFeesCost": "24.09",
+    "otherCosts": "0.00",
+    "netProfit": "174.57",
+    "marginPct": "5.82",
+    "verdict": "marginal"
+   }
+  },
+  {
+   "id": "GF-06a",
+   "description": "AU boundary JUST BELOW \u2014 goods A$999.99 (comparand = goods only). Must resolve BELOW.",
+   "product": {
+    "code": "SYNTHETIC-A",
+    "usd": 716.84,
+    "name": "Synthetic boundary product (below)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 716.84,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 1400.0,
+    "inboundShippingLocal": 20.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "999.99",
+    "inboundShipping": "20.00",
+    "duty": "0.00",
+    "auAboveThreshold": false,
+    "importTax": "0.00",
+    "importTaxReclaimable": false,
+    "landedCost": "1019.99",
+    "sellingPriceGross": "1400.00",
+    "outputTax": "0.00",
+    "netRevenue": "1400.00",
+    "platformFees": {
+     "referralFee": "112.00",
+     "perItemPlanFee": "0.99"
     },
-    {
-      "id": "GF-06b",
-      "description": "AU boundary EXACT \u2014 goods A$1,000.00. Must resolve ABOVE (>= is inclusive).",
-      "product": {
-        "code": "SYNTHETIC-B",
-        "usd": 716.845,
-        "name": "Synthetic boundary product (exact)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 716.845,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 1400.0,
-        "inboundShippingLocal": 20.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "1000.00",
-        "inboundShipping": "20.00",
-        "duty": "0.00",
-        "auAboveThreshold": true,
-        "importTax": "102.00",
-        "importTaxReclaimable": false,
-        "landedCost": "1122.00",
-        "sellingPriceGross": "1400.00",
-        "outputTax": "0.00",
-        "netRevenue": "1400.00",
-        "platformFees": {
-          "referralFee": "112.00",
-          "perItemPlanFee": "0.99"
-        },
-        "platformFeeSubtotal": "112.99",
-        "taxOnPlatformFees": "11.30",
-        "taxOnPlatformFeesCost": "11.30",
-        "otherCosts": "0.00",
-        "netProfit": "153.71",
-        "marginPct": "10.98",
-        "verdict": "marginal"
-      }
+    "platformFeeSubtotal": "112.99",
+    "taxOnPlatformFees": "11.30",
+    "taxOnPlatformFeesCost": "11.30",
+    "otherCosts": "0.00",
+    "netProfit": "255.72",
+    "marginPct": "18.27",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-06b",
+   "description": "AU boundary EXACT \u2014 goods A$1,000.00. Must resolve ABOVE (>= is inclusive).",
+   "product": {
+    "code": "SYNTHETIC-B",
+    "usd": 716.845,
+    "name": "Synthetic boundary product (exact)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 716.845,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 1400.0,
+    "inboundShippingLocal": 20.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "1000.00",
+    "inboundShipping": "20.00",
+    "duty": "0.00",
+    "auAboveThreshold": true,
+    "importTax": "102.00",
+    "importTaxReclaimable": false,
+    "landedCost": "1122.00",
+    "sellingPriceGross": "1400.00",
+    "outputTax": "0.00",
+    "netRevenue": "1400.00",
+    "platformFees": {
+     "referralFee": "112.00",
+     "perItemPlanFee": "0.99"
     },
-    {
-      "id": "GF-06c",
-      "description": "NEGATIVE CONTROL \u2014 SAME product as GF-06a with freight raised A$20.00 -> A$500.00. Under goods-only the branch must NOT move: still BELOW, importTax still 0.00. Fails loudly if an implementation folds freight into the comparand.",
-      "product": {
-        "code": "SYNTHETIC-A",
-        "usd": 716.84,
-        "name": "Synthetic boundary product (below)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 716.84,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 1900.0,
-        "inboundShippingLocal": 500.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "999.99",
-        "inboundShipping": "500.00",
-        "duty": "0.00",
-        "auAboveThreshold": false,
-        "importTax": "0.00",
-        "importTaxReclaimable": false,
-        "landedCost": "1499.99",
-        "sellingPriceGross": "1900.00",
-        "outputTax": "0.00",
-        "netRevenue": "1900.00",
-        "platformFees": {
-          "referralFee": "152.00",
-          "perItemPlanFee": "0.99"
-        },
-        "platformFeeSubtotal": "152.99",
-        "taxOnPlatformFees": "15.30",
-        "taxOnPlatformFeesCost": "15.30",
-        "otherCosts": "0.00",
-        "netProfit": "231.72",
-        "marginPct": "12.20",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "112.99",
+    "taxOnPlatformFees": "11.30",
+    "taxOnPlatformFeesCost": "11.30",
+    "otherCosts": "0.00",
+    "netProfit": "153.71",
+    "marginPct": "10.98",
+    "verdict": "marginal"
+   }
+  },
+  {
+   "id": "GF-06c",
+   "description": "NEGATIVE CONTROL \u2014 SAME product as GF-06a with freight raised A$20.00 -> A$500.00. Under goods-only the branch must NOT move: still BELOW, importTax still 0.00. Fails loudly if an implementation folds freight into the comparand.",
+   "product": {
+    "code": "SYNTHETIC-A",
+    "usd": 716.84,
+    "name": "Synthetic boundary product (below)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 716.84,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 1900.0,
+    "inboundShippingLocal": 500.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "999.99",
+    "inboundShipping": "500.00",
+    "duty": "0.00",
+    "auAboveThreshold": false,
+    "importTax": "0.00",
+    "importTaxReclaimable": false,
+    "landedCost": "1499.99",
+    "sellingPriceGross": "1900.00",
+    "outputTax": "0.00",
+    "netRevenue": "1900.00",
+    "platformFees": {
+     "referralFee": "152.00",
+     "perItemPlanFee": "0.99"
     },
-    {
-      "id": "GF-07",
-      "description": "UK / eBay / not VAT-reg. Exercises regulatory fee + per-order fee tier.",
-      "product": {
-        "code": "BO00039",
-        "usd": 250,
-        "name": "Bose QuietComfort Ultra (Black)",
-        "category": "audio"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 250,
-        "platform": "ebay",
-        "taxRegistered": false,
-        "sellingPriceLocal": 249.99,
-        "inboundShippingLocal": 8.0,
-        "dutyPct": 0,
-        "referralFeePct": 9
-      },
-      "expected": {
-        "goodsCostLocal": "185.60",
-        "inboundShipping": "8.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "38.72",
-        "importTaxReclaimable": false,
-        "landedCost": "232.32",
-        "sellingPriceGross": "249.99",
-        "outputTax": "0.00",
-        "netRevenue": "249.99",
-        "platformFees": {
-          "referralFee": "22.50",
-          "regulatoryFee": "1.05",
-          "perOrderFee": "0.4"
-        },
-        "platformFeeSubtotal": "23.95",
-        "taxOnPlatformFees": "4.79",
-        "taxOnPlatformFeesCost": "4.79",
-        "otherCosts": "0.00",
-        "netProfit": "-11.07",
-        "marginPct": "-4.43",
-        "verdict": "loss-making"
-      }
+    "platformFeeSubtotal": "152.99",
+    "taxOnPlatformFees": "15.30",
+    "taxOnPlatformFeesCost": "15.30",
+    "otherCosts": "0.00",
+    "netProfit": "231.72",
+    "marginPct": "12.20",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-07",
+   "description": "UK / eBay / not VAT-reg. Exercises regulatory fee + per-order fee tier.",
+   "product": {
+    "code": "BO00039",
+    "usd": 250,
+    "name": "Bose QuietComfort Ultra (Black)",
+    "category": "audio"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 250,
+    "platform": "ebay",
+    "taxRegistered": false,
+    "sellingPriceLocal": 249.99,
+    "inboundShippingLocal": 8.0,
+    "dutyPct": 0,
+    "referralFeePct": 9
+   },
+   "expected": {
+    "goodsCostLocal": "185.60",
+    "inboundShipping": "8.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "38.72",
+    "importTaxReclaimable": false,
+    "landedCost": "232.32",
+    "sellingPriceGross": "249.99",
+    "outputTax": "0.00",
+    "netRevenue": "249.99",
+    "platformFees": {
+     "referralFee": "22.50",
+     "regulatoryFee": "1.05",
+     "perOrderFee": "0.4"
     },
-    {
-      "id": "GF-08",
-      "description": "AU / eBay FREE TIER (trailing sales <= A$25k). All transaction fees must zero out.",
-      "product": {
-        "code": "BO00039",
-        "usd": 250,
-        "name": "Bose QuietComfort Ultra (Black)",
-        "category": "audio"
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "AU",
-        "usd": 250,
-        "platform": "ebay",
-        "taxRegistered": false,
-        "sellingPriceLocal": 599.0,
-        "inboundShippingLocal": 15.0,
-        "dutyPct": 0,
-        "referralFeePct": 13.4,
-        "ebayFreeTier": true
-      },
-      "expected": {
-        "goodsCostLocal": "348.75",
-        "inboundShipping": "15.00",
-        "duty": "0.00",
-        "auAboveThreshold": false,
-        "importTax": "0.00",
-        "importTaxReclaimable": false,
-        "landedCost": "363.75",
-        "sellingPriceGross": "599.00",
-        "outputTax": "0.00",
-        "netRevenue": "599.00",
-        "platformFees": {
-          "referralFee": "0.00"
-        },
-        "platformFeeSubtotal": "0.00",
-        "taxOnPlatformFees": "0.00",
-        "taxOnPlatformFeesCost": "0.00",
-        "otherCosts": "0.00",
-        "netProfit": "235.25",
-        "marginPct": "39.27",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "23.95",
+    "taxOnPlatformFees": "4.79",
+    "taxOnPlatformFeesCost": "4.79",
+    "otherCosts": "0.00",
+    "netProfit": "-11.07",
+    "marginPct": "-4.43",
+    "verdict": "loss-making"
+   }
+  },
+  {
+   "id": "GF-08",
+   "description": "AU / eBay FREE TIER (trailing sales <= A$25k). All transaction fees must zero out.",
+   "product": {
+    "code": "BO00039",
+    "usd": 250,
+    "name": "Bose QuietComfort Ultra (Black)",
+    "category": "audio"
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "AU",
+    "usd": 250,
+    "platform": "ebay",
+    "taxRegistered": false,
+    "sellingPriceLocal": 599.0,
+    "inboundShippingLocal": 15.0,
+    "dutyPct": 0,
+    "referralFeePct": 13.4,
+    "ebayFreeTier": true
+   },
+   "expected": {
+    "goodsCostLocal": "348.75",
+    "inboundShipping": "15.00",
+    "duty": "0.00",
+    "auAboveThreshold": false,
+    "importTax": "0.00",
+    "importTaxReclaimable": false,
+    "landedCost": "363.75",
+    "sellingPriceGross": "599.00",
+    "outputTax": "0.00",
+    "netRevenue": "599.00",
+    "platformFees": {
+     "referralFee": "0.00"
     },
-    {
-      "id": "GF-09",
-      "description": "UK / Shopify / VAT-reg. Payment fee pct+fixed, ad spend, no referral fee.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "shopify",
-        "taxRegistered": true,
-        "sellingPriceLocal": 649.0,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "shopifyPlan": "basic",
-        "adSpendLocal": 45.0,
-        "packagingLocal": 3.5
-      },
-      "expected": {
-        "goodsCostLocal": "343.73",
-        "inboundShipping": "12.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "71.15",
-        "importTaxReclaimable": true,
-        "landedCost": "355.73",
-        "sellingPriceGross": "649.00",
-        "outputTax": "108.17",
-        "netRevenue": "540.83",
-        "platformFees": {
-          "paymentFee": "13.23"
-        },
-        "platformFeeSubtotal": "13.23",
-        "taxOnPlatformFees": "2.65",
-        "taxOnPlatformFeesCost": "0.00",
-        "otherCosts": "48.50",
-        "netProfit": "123.37",
-        "marginPct": "19.01",
-        "verdict": "profitable"
-      }
+    "platformFeeSubtotal": "0.00",
+    "taxOnPlatformFees": "0.00",
+    "taxOnPlatformFeesCost": "0.00",
+    "otherCosts": "0.00",
+    "netProfit": "235.25",
+    "marginPct": "39.27",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-09",
+   "description": "UK / Shopify / VAT-reg. Payment fee pct+fixed, ad spend, no referral fee.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "shopify",
+    "taxRegistered": true,
+    "sellingPriceLocal": 649.0,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "shopifyPlan": "basic",
+    "adSpendLocal": 45.0,
+    "packagingLocal": 3.5
+   },
+   "expected": {
+    "goodsCostLocal": "343.73",
+    "inboundShipping": "12.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "71.15",
+    "importTaxReclaimable": true,
+    "landedCost": "355.73",
+    "sellingPriceGross": "649.00",
+    "outputTax": "108.17",
+    "netRevenue": "540.83",
+    "platformFees": {
+     "paymentFee": "13.23"
     },
-    {
-      "id": "GF-10",
-      "description": "LOSS CASE \u2014 UK / Amazon, selling price below landed cost. Verdict must be loss-making.",
-      "product": {
-        "code": "OP00573",
-        "usd": 463,
-        "name": "Nord 6 512GB (Fresh Mint)",
-        "category": "mobile-phone"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "sellingPriceLocal": 399.0,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "expected": {
-        "goodsCostLocal": "343.73",
-        "inboundShipping": "12.00",
-        "duty": "0.00",
-        "auAboveThreshold": null,
-        "importTax": "71.15",
-        "importTaxReclaimable": false,
-        "landedCost": "426.88",
-        "sellingPriceGross": "399.00",
-        "outputTax": "0.00",
-        "netRevenue": "399.00",
-        "platformFees": {
-          "referralFee": "31.92",
-          "perItemPlanFee": "0.75"
-        },
-        "platformFeeSubtotal": "32.67",
-        "taxOnPlatformFees": "6.53",
-        "taxOnPlatformFeesCost": "6.53",
-        "otherCosts": "0.00",
-        "netProfit": "-67.08",
-        "marginPct": "-16.81",
-        "verdict": "loss-making"
-      }
-    }
-  ],
-  "solverCases": [
-    {
-      "id": "SV-01",
-      "description": "UK/Amazon/not-reg \u2014 price for 0% margin (true break-even)",
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "targetMarginPct": 0,
-      "expected": {
-        "targetMarginPct": "0",
-        "seedPriceGross": "473.04",
-        "suggestedPriceGross": "473.21",
-        "nudgeSteps": 17,
-        "denominator_k_minus_f_minus_m": "0.904000"
-      }
+    "platformFeeSubtotal": "13.23",
+    "taxOnPlatformFees": "2.65",
+    "taxOnPlatformFeesCost": "0.00",
+    "otherCosts": "48.50",
+    "netProfit": "123.37",
+    "marginPct": "19.01",
+    "verdict": "profitable"
+   }
+  },
+  {
+   "id": "GF-10",
+   "description": "LOSS CASE \u2014 UK / Amazon, selling price below landed cost. Verdict must be loss-making.",
+   "product": {
+    "code": "OP00573",
+    "usd": 463,
+    "name": "Nord 6 512GB (Fresh Mint)",
+    "category": "mobile-phone"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "sellingPriceLocal": 399.0,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "expected": {
+    "goodsCostLocal": "343.73",
+    "inboundShipping": "12.00",
+    "duty": "0.00",
+    "auAboveThreshold": null,
+    "importTax": "71.15",
+    "importTaxReclaimable": false,
+    "landedCost": "426.88",
+    "sellingPriceGross": "399.00",
+    "outputTax": "0.00",
+    "netRevenue": "399.00",
+    "platformFees": {
+     "referralFee": "31.92",
+     "perItemPlanFee": "0.75"
     },
-    {
-      "id": "SV-02",
-      "description": "UK/Amazon/not-reg \u2014 price for 20% margin",
-      "input": {
-        "market": "UK",
-        "usd": 463,
-        "platform": "amazon",
-        "taxRegistered": false,
-        "inboundShippingLocal": 12.0,
-        "dutyPct": 0,
-        "referralFeePct": 8,
-        "amazonPlan": "individual"
-      },
-      "fx": {
-        "pair": "USD/GBP",
-        "rate": 0.7424,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "targetMarginPct": 20,
-      "expected": {
-        "targetMarginPct": "20",
-        "seedPriceGross": "607.43",
-        "suggestedPriceGross": "607.60",
-        "nudgeSteps": 17,
-        "denominator_k_minus_f_minus_m": "0.704000"
-      }
-    },
-    {
-      "id": "SV-03",
-      "description": "AU/eBay/GST-reg \u2014 price for 15% margin (below threshold)",
-      "input": {
-        "market": "AU",
-        "usd": 463,
-        "platform": "ebay",
-        "taxRegistered": true,
-        "inboundShippingLocal": 20.0,
-        "dutyPct": 0,
-        "referralFeePct": 13.4
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "targetMarginPct": 15,
-      "expected": {
-        "targetMarginPct": "15",
-        "seedPriceGross": "1065.27",
-        "suggestedPriceGross": "1065.27",
-        "nudgeSteps": 0,
-        "denominator_k_minus_f_minus_m": "0.625091"
-      }
-    },
-    {
-      "id": "SV-04",
-      "description": "UNREACHABLE \u2014 AU/eBay/not-reg targeting 90% margin. Denominator <= 0, must return null.",
-      "input": {
-        "market": "AU",
-        "usd": 463,
-        "platform": "ebay",
-        "taxRegistered": false,
-        "inboundShippingLocal": 20.0,
-        "dutyPct": 0,
-        "referralFeePct": 13.4
-      },
-      "fx": {
-        "pair": "USD/AUD",
-        "rate": 1.395,
-        "asOf": "2026-08-25",
-        "source": "frozen-fixture"
-      },
-      "targetMarginPct": 90,
-      "expected": null
-    }
-  ]
+    "platformFeeSubtotal": "32.67",
+    "taxOnPlatformFees": "6.53",
+    "taxOnPlatformFeesCost": "6.53",
+    "otherCosts": "0.00",
+    "netProfit": "-67.08",
+    "marginPct": "-16.81",
+    "verdict": "loss-making"
+   }
+  }
+ ],
+ "solverCases": [
+  {
+   "id": "SV-01",
+   "description": "UK/Amazon/not-reg \u2014 price for 0% margin (true break-even)",
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "targetMarginPct": 0,
+   "expected": {
+    "targetMarginPct": "0",
+    "seedPriceGross": "473.04",
+    "suggestedPriceGross": "473.21",
+    "nudgeSteps": 17,
+    "denominator_k_minus_f_minus_m": "0.904000"
+   }
+  },
+  {
+   "id": "SV-02",
+   "description": "UK/Amazon/not-reg \u2014 price for 20% margin",
+   "input": {
+    "market": "UK",
+    "usd": 463,
+    "platform": "amazon",
+    "taxRegistered": false,
+    "inboundShippingLocal": 12.0,
+    "dutyPct": 0,
+    "referralFeePct": 8,
+    "amazonPlan": "individual"
+   },
+   "fx": {
+    "pair": "USD/GBP",
+    "rate": 0.7424,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "targetMarginPct": 20,
+   "expected": {
+    "targetMarginPct": "20",
+    "seedPriceGross": "607.43",
+    "suggestedPriceGross": "607.60",
+    "nudgeSteps": 17,
+    "denominator_k_minus_f_minus_m": "0.704000"
+   }
+  },
+  {
+   "id": "SV-03",
+   "description": "AU/eBay/GST-reg \u2014 price for 15% margin (below threshold)",
+   "input": {
+    "market": "AU",
+    "usd": 463,
+    "platform": "ebay",
+    "taxRegistered": true,
+    "inboundShippingLocal": 20.0,
+    "dutyPct": 0,
+    "referralFeePct": 13.4
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "targetMarginPct": 15,
+   "expected": {
+    "targetMarginPct": "15",
+    "seedPriceGross": "1065.27",
+    "suggestedPriceGross": "1065.27",
+    "nudgeSteps": 0,
+    "denominator_k_minus_f_minus_m": "0.625091"
+   }
+  },
+  {
+   "id": "SV-04",
+   "description": "UNREACHABLE \u2014 AU/eBay/not-reg targeting 90% margin. Denominator <= 0, must return null.",
+   "input": {
+    "market": "AU",
+    "usd": 463,
+    "platform": "ebay",
+    "taxRegistered": false,
+    "inboundShippingLocal": 20.0,
+    "dutyPct": 0,
+    "referralFeePct": 13.4
+   },
+   "fx": {
+    "pair": "USD/AUD",
+    "rate": 1.395,
+    "asOf": "2026-08-25",
+    "source": "frozen-fixture"
+   },
+   "targetMarginPct": 90,
+   "expected": null
+  }
+ ]
 }

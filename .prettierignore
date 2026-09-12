@@ -1,0 +1,5 @@
+PROJECT_SPEC.md
+docs/**
+.superpowers/**
+src/data/*.json
+data/*.json
