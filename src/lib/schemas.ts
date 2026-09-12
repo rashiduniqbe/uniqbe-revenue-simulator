@@ -46,7 +46,7 @@ export const Catalogue = z.object({
 });
 export type CatalogueType = z.infer<typeof Catalogue>;
 
-const AmazonFees = z.object({
+export const AmazonFees = z.object({
   referralFeePctDefault: z.number(),
   referralFeePctByCategory: categoryMap(z.number()),
   minReferralFee: z.number().optional(),
@@ -54,8 +54,9 @@ const AmazonFees = z.object({
   professionalMonthlyFee: z.number(),
   feesAreTaxable: z.boolean(),
 });
+export type AmazonFeesType = z.infer<typeof AmazonFees>;
 
-const EbayFees = z.object({
+export const EbayFees = z.object({
   referralFeePctDefault: z.number(),
   referralFeePctByCategory: categoryMap(z.number()),
   regulatoryFeePct: z.number(),
@@ -69,10 +70,11 @@ const EbayFees = z.object({
   individualPerItemFee: z.number(),
   feesAreTaxable: z.boolean(),
 });
+export type EbayFeesType = z.infer<typeof EbayFees>;
 
 const ShopifyPlanFee = z.object({ pct: z.number(), fixed: z.number() });
 
-const ShopifyFees = z.object({
+export const ShopifyFees = z.object({
   referralFeePctDefault: z.number(),
   monthlyByPlan: z.object({ basic: z.number(), grow: z.number(), advanced: z.number() }),
   payments: z.object({ basic: ShopifyPlanFee, grow: ShopifyPlanFee, advanced: ShopifyPlanFee }),
@@ -80,11 +82,13 @@ const ShopifyFees = z.object({
   feesAreTaxable: z.boolean(),
   requiresAdSpendInput: z.boolean(),
 });
+export type ShopifyFeesType = z.infer<typeof ShopifyFees>;
 
-const OtherFees = z.object({
+export const OtherFees = z.object({
   referralFeePctDefault: z.number(),
   feesAreTaxable: z.literal(false),
 });
+export type OtherFeesType = z.infer<typeof OtherFees>;
 
 const MarketBlock = z.object({
   marketLabel: z.string(),
