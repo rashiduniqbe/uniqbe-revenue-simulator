@@ -8,15 +8,18 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "pnpm run catalogue:check && next build",
     "start": "next start",
     "lint": "eslint . && prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test"
+    "verify": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "catalogue:build": "tsx scripts/build-catalogue.ts",
+    "catalogue:check": "tsx scripts/build-catalogue.ts --verify"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "next": "^15.5.25",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

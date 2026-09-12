@@ -3,3 +3,4 @@ docs/**
 .superpowers/**
 src/data/*.json
 data/*.json
+pnpm-lock.yaml
