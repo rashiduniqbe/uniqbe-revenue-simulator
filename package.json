@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "verify": "pnpm run typecheck && pnpm run lint && pnpm run test",
     "catalogue:build": "tsx scripts/build-catalogue.ts",
-    "catalogue:check": "tsx scripts/build-catalogue.ts --verify"
+    "catalogue:check": "tsx scripts/build-catalogue.ts --verify",
+    "catalogue:diff": "tsx scripts/catalogue-diff.ts"
   },
   "dependencies": {
     "exceljs": "^4.4.0",
