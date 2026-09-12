@@ -243,28 +243,27 @@ export function suggestPrice(
     const marginOk = new Decimal(result.marginPct).gte(targetMarginPct);
     const profitOk = new Decimal(result.netProfit).gte(0);
     if (marginOk && profitOk) {
-      // If we had to nudge forward to reach a passing price, walk backward to find
-      // the true minimum, correcting for rounding noise in calculate()'s computations
+      // Found a passing price (whether seed or after forward nudging).
+      // Now walk backward to find the true minimum price that still satisfies both checks.
+      // This corrects for rounding noise in calculate()'s intermediate calculations.
       let minPrice = price;
       let backwardSteps = 0;
 
-      if (steps > 0) {
-        while (backwardSteps < MAX_BACKWARD_STEPS) {
-          const testPrice = minPrice.minus(NUDGE_STEP);
-          const testResult = calculate(
-            { ...input, sellingPriceLocal: testPrice.toFixed(2) },
-            fx,
-            rules,
-          );
-          const testMarginOk = new Decimal(testResult.marginPct).gte(targetMarginPct);
-          const testProfitOk = new Decimal(testResult.netProfit).gte(0);
+      while (backwardSteps < MAX_BACKWARD_STEPS) {
+        const testPrice = minPrice.minus(NUDGE_STEP);
+        const testResult = calculate(
+          { ...input, sellingPriceLocal: testPrice.toFixed(2) },
+          fx,
+          rules,
+        );
+        const testMarginOk = new Decimal(testResult.marginPct).gte(targetMarginPct);
+        const testProfitOk = new Decimal(testResult.netProfit).gte(0);
 
-          if (testMarginOk && testProfitOk) {
-            minPrice = testPrice;
-            backwardSteps += 1;
-          } else {
-            break;
-          }
+        if (testMarginOk && testProfitOk) {
+          minPrice = testPrice;
+          backwardSteps += 1;
+        } else {
+          break;
         }
       }
 
