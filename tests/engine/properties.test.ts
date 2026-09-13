@@ -54,15 +54,33 @@ describe("property: breakdown sums exactly (invariant 1)", () => {
 
 describe("property: monotonic in price (invariant 2)", () => {
   it("raising sellingPriceLocal never lowers netProfit", () => {
-    // ADR-005: per-line 2dp rounding of independently-rounded percentage-based fee
-    // lines (e.g. eBay's referralFee + regulatoryFee) can each cross their own
-    // rounding boundary on the same price step, producing a bounded few-cent
-    // non-monotonic wobble even though every line matches its golden-fixture
-    // formula exactly. ADR-005 explicitly accepts "a few cents of theoretical
-    // accuracy" as the cost of per-line (vs. end) rounding. A genuine bug (sign
-    // error, wrong formula) would violate this far outside a 5-cent band or fail
-    // systematically, not as a rare multi-thousand-trial shrink.
-    const MONOTONICITY_ROUNDING_TOLERANCE = "0.05";
+    // This tolerance absorbs two distinct, legitimate mechanisms — not just one:
+    //
+    // (a) Rounding noise (ADR-005, PROJECT_SPEC.md: "Per-line rounding costs a
+    //     few cents of theoretical accuracy"): per-line 2dp rounding of
+    //     independently-rounded percentage-based fee lines (e.g. eBay's
+    //     referralFee + regulatoryFee) can each cross their own rounding
+    //     boundary on the same price step, producing a small (~1-2 cent)
+    //     non-monotonic wobble even though every line matches its
+    //     golden-fixture formula exactly.
+    //
+    // (b) Genuine fee-schedule step functions: some platform fee schedules are
+    //     not smooth in price — they are deliberate business-rule step
+    //     functions. eBay UK's perOrderFee (src/data/market-rules.json,
+    //     UK.platforms.ebay.perOrderFee) jumps from £0.30 to £0.40 the instant
+    //     sellingPriceLocal crosses its £10.00 thresholdLocal. That fee is
+    //     itself subject to feeTaxRate (up to 20% VAT), so the worst-case
+    //     single-step profit drop when a price crosses the threshold is
+    //     0.10 x 1.2 = £0.12 — larger than ordinary rounding noise, but still a
+    //     real, correct, one-time drop, not a bug. This is the largest known
+    //     step across all platform fee schedules; the tolerance must cover it.
+    //
+    // 0.20 gives a generous margin above the true ~$0.12 worst case, comfortably
+    // absorbing both mechanisms together, while still being far too small to
+    // mask an actual sign error or wrong-formula bug — those would violate this
+    // bound far outside this band, or fail systematically across many trials,
+    // not as a rare shrink tied to a specific fee threshold.
+    const MONOTONICITY_ROUNDING_TOLERANCE = "0.20";
 
     fc.assert(
       fc.property(
