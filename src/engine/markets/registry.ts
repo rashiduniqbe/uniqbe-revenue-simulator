@@ -1,5 +1,5 @@
 import type { Decimal } from "decimal.js";
-import type { Market } from "../types";
+import type { Market, Platform } from "../types";
 
 export type EngineContext = {
   market: Market;
@@ -9,7 +9,7 @@ export type EngineContext = {
   above: boolean | null;
   importTax: Decimal;
   registered: boolean;
-  platform: string;
+  platform: Platform;
   adSpend: Decimal;
   shopifyHasAbn: boolean;
 };
