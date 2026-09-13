@@ -228,6 +228,18 @@ export function suggestPrice(
 
       const flatFEff = referralFeePct.plus(regRate).times(new Decimal(1).plus(feeTaxRate));
       const flatFixedCosts = perOrder.times(new Decimal(1).plus(feeTaxRate));
+      const flatDenominator = k.minus(flatFEff).minus(m);
+
+      if (flatDenominator.lte(0)) {
+        // Unreachable at the base rate. eBay's tiered discount only ever LOWERS the
+        // effective fee above the threshold, so it can never rescue a target that's
+        // already unreachable at the flat rate -- it can only reduce an overshoot for
+        // a target that IS reachable. Fall through to the flat values so the normal
+        // post-switch denominator<=0 check returns null.
+        fEff = flatFEff;
+        fixedCosts = flatFixedCosts;
+        break;
+      }
 
       if (!eb.tieredAbove) {
         fEff = flatFEff;
@@ -236,12 +248,9 @@ export function suggestPrice(
       }
 
       const threshold = new Decimal(eb.tieredAbove.thresholdLocal);
-      const flatDenominator = k.minus(flatFEff).minus(m);
-      const flatCandidate = flatDenominator.gt(0)
-        ? r2(flatFixedCosts.plus(landed).div(flatDenominator))
-        : null;
+      const flatCandidate = r2(flatFixedCosts.plus(landed).div(flatDenominator));
 
-      if (flatCandidate !== null && flatCandidate.lte(threshold)) {
+      if (flatCandidate.lte(threshold)) {
         fEff = flatFEff;
         fixedCosts = flatFixedCosts;
         break;
