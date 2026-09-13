@@ -200,6 +200,6 @@
     "feesAreTaxable": false
    }
   },
-  "deMinimisComparandNote": "Set to goods-only by Uniqbe instruction, 26 Aug 2026, described as provisional. Accepts \"goods\" or \"goods+freight\". Switching this value is the ONLY change required if a customs broker advises otherwise \u2014 plus regenerating fixtures GF-06a/b/c. Engine reads this at runtime; the rule is never inlined in code."
+  "deMinimisComparandNote": "Set to goods-only by Uniqbe instruction, 26 Aug 2026, described as provisional. Accepts \"goods\" or \"goods+freight\" as documentation values only. As of Phase 2, the comparand kind and the A$1,000 threshold are hardcoded constants in src/engine/markets/au.ts and separately duplicated in src/engine/warnings.ts \u2014 they are NOT read from this JSON file at runtime. Changing this field's value alone has no effect on engine behavior; both source files must be edited by hand (and fixtures GF-06a/b/c regenerated) for a comparand or threshold change to take effect."
  }
 }

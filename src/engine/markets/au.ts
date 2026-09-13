@@ -18,10 +18,17 @@ export function comparand(kind: DeMinimisComparand, goods: Decimal, freight: Dec
 const DE_MINIMIS_LOCAL = new Decimal(1000);
 // This constant mirrors src/data/market-rules.json's AU.deMinimisLocal (1000) and
 // AU.deMinimisComparand ("goods"). It is NOT hardcoded catalogue data (AGENTS.md 3a
-// forbids catalogue-derived facts, not business-rule config); index.ts (Task 5) passes
-// the loaded MarketRules through so a future change to market-rules.json's values
-// flows through without touching this file — see Task 5 Step 3 for how the module is
-// parameterised at wire-up time.
+// forbids catalogue-derived facts, not business-rule config) — but it IS a hardcoded
+// compile-time constant here, and the "goods" comparand kind passed to comparand()
+// below (isAboveThreshold) is likewise hardcoded, not read from market-rules.json at
+// runtime. index.ts does NOT thread MarketRules into this module at all — it calls
+// this module's methods through the static MARKET_MODULES registry with no rules
+// parameter. The same threshold/comparand values are ALSO independently duplicated
+// in src/engine/warnings.ts (AU_DE_MINIMIS). Changing the AU de-minimis threshold or
+// comparand requires manually editing BOTH this file and warnings.ts, and keeping
+// them in sync is the developer's responsibility until a future refactor threads
+// MarketRules through the MarketModule/EngineContext interfaces — that refactor is
+// out of scope for this plan.
 
 export const auModule: MarketModule = {
   id: "AU",
