@@ -135,3 +135,12 @@ export const FxSnapshot = z.object({
   ageDays: z.number(),
 });
 export type FxSnapshotType = z.infer<typeof FxSnapshot>;
+
+export const FxRawSnapshot = z.object({
+  base: z.literal("USD"),
+  rates: z.object({ GBP: z.number(), AUD: z.number() }),
+  asOf: z.string().date(),
+  fetchedAt: z.string(),
+  provider: z.enum(["frankfurter", "fallback", "seed"]),
+});
+export type FxRawSnapshotType = z.infer<typeof FxRawSnapshot>;
