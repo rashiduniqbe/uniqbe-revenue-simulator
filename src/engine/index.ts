@@ -197,6 +197,7 @@ export function suggestPrice(
 
   const referralFeePct = new Decimal(input.referralFeePct).div(100);
   const feeTaxRate = input.taxRegistered ? new Decimal(0) : new Decimal(market.taxRatePct).div(100);
+  const m = new Decimal(targetMarginPct).div(100);
   let fEff: Decimal;
   let fixedCosts: Decimal;
 
@@ -213,35 +214,59 @@ export function suggestPrice(
     }
     case "ebay": {
       const eb = marketRules.platforms.ebay;
-      const rate = input.ebayFreeTier ? new Decimal(0) : referralFeePct;
-      fEff = rate.times(new Decimal(1).plus(feeTaxRate));
-      const regFee =
-        eb.regulatoryFeePct > 0 && !input.ebayFreeTier
-          ? new Decimal(eb.regulatoryFeePct).div(100)
-          : new Decimal(0);
-      fEff = fEff.plus(regFee.times(new Decimal(1).plus(feeTaxRate)));
-      fixedCosts = new Decimal(0);
+      const isFreeTier = input.market === "AU" && input.ebayFreeTier;
+
+      if (isFreeTier) {
+        fEff = new Decimal(0);
+        fixedCosts = new Decimal(0);
+        break;
+      }
+
+      const regRate =
+        eb.regulatoryFeePct > 0 ? new Decimal(eb.regulatoryFeePct).div(100) : new Decimal(0);
+      const perOrder = new Decimal(eb.perOrderFee.high);
+
+      const flatFEff = referralFeePct.plus(regRate).times(new Decimal(1).plus(feeTaxRate));
+      const flatFixedCosts = perOrder.times(new Decimal(1).plus(feeTaxRate));
+
+      if (!eb.tieredAbove) {
+        fEff = flatFEff;
+        fixedCosts = flatFixedCosts;
+        break;
+      }
+
+      const threshold = new Decimal(eb.tieredAbove.thresholdLocal);
+      const flatDenominator = k.minus(flatFEff).minus(m);
+      const flatCandidate = flatDenominator.gt(0)
+        ? r2(flatFixedCosts.plus(landed).div(flatDenominator))
+        : null;
+
+      if (flatCandidate !== null && flatCandidate.lte(threshold)) {
+        fEff = flatFEff;
+        fixedCosts = flatFixedCosts;
+        break;
+      }
+
+      const pctAbove = new Decimal(eb.tieredAbove.pctAbove).div(100);
+      const tieredConstant = threshold.times(referralFeePct.minus(pctAbove));
+      fEff = pctAbove.plus(regRate).times(new Decimal(1).plus(feeTaxRate));
+      fixedCosts = tieredConstant.plus(perOrder).times(new Decimal(1).plus(feeTaxRate));
       break;
     }
     case "shopify": {
       const plan = marketRules.platforms.shopify.payments[input.shopifyPlan];
       fEff = new Decimal(plan.pct).div(100).times(new Decimal(1).plus(feeTaxRate));
-      fixedCosts = new Decimal(plan.fixed)
-        .plus(r2(input.packagingLocal))
-        .plus(r2(input.adSpendLocal));
+      fixedCosts = new Decimal(plan.fixed);
       break;
     }
     case "other":
       fEff = new Decimal(0);
-      fixedCosts = r2(input.packagingLocal).plus(r2(input.adSpendLocal));
+      fixedCosts = new Decimal(0);
       break;
   }
 
-  if (input.platform !== "shopify") {
-    fixedCosts = fixedCosts.plus(r2(input.packagingLocal)).plus(r2(input.adSpendLocal));
-  }
+  fixedCosts = fixedCosts.plus(r2(input.packagingLocal)).plus(r2(input.adSpendLocal));
 
-  const m = new Decimal(targetMarginPct).div(100);
   const denominator = k.minus(fEff).minus(m);
 
   if (denominator.lte(0)) {
