@@ -243,6 +243,66 @@ describe("property: registration invariance at 0% tax (invariant 7)", () => {
   });
 });
 
+function fxForDegraded(market: "UK" | "AU", degraded: boolean) {
+  const base = fxFor(market);
+  return { ...base, degraded };
+}
+
+// Fix 6 (final whole-branch review): warnings/breakdown fields were never asserted
+// by any test. These properties close that wiring gap without touching
+// data/golden-fixtures.json or any describe.each(fixturesRaw...) block.
+describe("property: warnings — required codes present exactly once, no duplicates (Fix 6)", () => {
+  it("NOT_TAX_ADVICE and CUSTOMS_DECLARED_VALUE_UNCONFIRMED each appear exactly once", () => {
+    fc.assert(
+      fc.property(validInput, (input) => {
+        const result = calculate(input, fxFor(input.market), rules);
+        const codes = result.warnings.map((w) => w.code);
+        expect(codes.filter((c) => c === "NOT_TAX_ADVICE")).toHaveLength(1);
+        expect(codes.filter((c) => c === "CUSTOMS_DECLARED_VALUE_UNCONFIRMED")).toHaveLength(1);
+      }),
+      { numRuns: 1000 },
+    );
+  });
+
+  it("no warning code ever appears more than once", () => {
+    fc.assert(
+      fc.property(validInput, (input) => {
+        const result = calculate(input, fxFor(input.market), rules);
+        const codes = result.warnings.map((w) => w.code);
+        expect(new Set(codes).size).toBe(codes.length);
+      }),
+      { numRuns: 1000 },
+    );
+  });
+});
+
+describe("property: breakdown — no '-0.00' amounts (Fix 6 / Fix 7)", () => {
+  it("no breakdown line's amount is ever the literal string '-0.00'", () => {
+    fc.assert(
+      fc.property(validInput, (input) => {
+        const result = calculate(input, fxFor(input.market), rules);
+        for (const line of result.breakdown) {
+          expect(line.amount).not.toBe("-0.00");
+        }
+      }),
+      { numRuns: 1000 },
+    );
+  });
+});
+
+describe("property: FX_DEGRADED present iff fx.degraded is true (Fix 6)", () => {
+  it("warnings contains FX_DEGRADED exactly when fx.degraded is true", () => {
+    fc.assert(
+      fc.property(validInput, fc.boolean(), (input, degraded) => {
+        const result = calculate(input, fxForDegraded(input.market, degraded), rules);
+        const hasFxDegraded = result.warnings.some((w) => w.code === "FX_DEGRADED");
+        expect(hasFxDegraded).toBe(degraded);
+      }),
+      { numRuns: 1000 },
+    );
+  });
+});
+
 describe("property: catalogue independence (invariant 8)", () => {
   it("calculate()'s output depends only on SimulationInput, never on catalogue.json", () => {
     // calculate() never imports src/data/catalogue.json (confirmed by this file's own
