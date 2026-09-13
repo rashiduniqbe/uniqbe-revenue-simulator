@@ -6,6 +6,25 @@ import { MarketRules } from "../../src/lib/schemas";
 import rulesRaw from "../../src/data/market-rules.json";
 import type { SimulationInput } from "../../src/engine/types";
 
+const baseInput: SimulationInput = {
+  market: "UK",
+  productCode: "TEST",
+  usd: 100,
+  category: "mobile-phone",
+  platform: "other",
+  taxRegistered: false,
+  sellingPriceLocal: "100.00",
+  inboundShippingLocal: "5.00",
+  packagingLocal: "0",
+  adSpendLocal: "0",
+  dutyPct: "0",
+  referralFeePct: "0",
+  amazonPlan: "individual",
+  shopifyPlan: "basic",
+  shopifyHasAbn: false,
+  ebayFreeTier: false,
+};
+
 const rules = MarketRules.parse(rulesRaw);
 
 // Normalizes a money-shaped value for comparison so a delivered fixture quirk like
@@ -67,4 +86,39 @@ describe.each(fixturesRaw.cases)("$id — $description", (c) => {
       }
     });
   }
+});
+
+// Fix 3 (final whole-branch review): FX_DEGRADED was declared in WarningCode but
+// never emitted anywhere. calculate() now appends it whenever fx.degraded is true.
+describe("FX_DEGRADED warning wiring (Fix 3)", () => {
+  const fx = { rate: "0.7424", asOf: "2026-08-25" };
+
+  it("appends FX_DEGRADED when fx.degraded is true", () => {
+    const result = calculate(baseInput, { ...fx, degraded: true }, rules);
+    expect(result.warnings).toContainEqual({ code: "FX_DEGRADED" });
+  });
+
+  it("does not append FX_DEGRADED when fx.degraded is false", () => {
+    const result = calculate(baseInput, { ...fx, degraded: false }, rules);
+    expect(result.warnings).not.toContainEqual({ code: "FX_DEGRADED" });
+  });
+});
+
+// Fix 5 (final whole-branch review): calculate() had no guard against a
+// non-positive sellingPriceLocal, silently producing marginPct: "-Infinity".
+// It now throws for zero or negative selling prices.
+describe("non-positive sellingPriceLocal guard (Fix 5)", () => {
+  const fx = { rate: "0.7424", asOf: "2026-08-25", degraded: false };
+
+  it("throws when sellingPriceLocal is zero", () => {
+    expect(() => calculate({ ...baseInput, sellingPriceLocal: "0.00" }, fx, rules)).toThrow(
+      "sellingPriceLocal must be a positive value",
+    );
+  });
+
+  it("throws when sellingPriceLocal is negative", () => {
+    expect(() => calculate({ ...baseInput, sellingPriceLocal: "-10.00" }, fx, rules)).toThrow(
+      "sellingPriceLocal must be a positive value",
+    );
+  });
 });

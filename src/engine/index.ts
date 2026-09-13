@@ -17,6 +17,13 @@ const MARKET_MODULES: Record<SimulationInput["market"], MarketModule> = {
   AU: auModule,
 };
 
+// Formats a cost line's amount for the breakdown array. A plain
+// `-${value.toFixed(2)}` produces the misleading string "-0.00" whenever
+// value is exactly zero; this normalizes that case to "0.00".
+function negativeAmount(value: Decimal): string {
+  return value.isZero() ? "0.00" : `-${value.toFixed(2)}`;
+}
+
 export function calculate(
   input: SimulationInput,
   fx: FxInput,
@@ -39,6 +46,9 @@ export function calculate(
     : goods.plus(shipping).plus(duty).plus(importTax);
 
   const sellingPriceGross = r2(input.sellingPriceLocal);
+  if (sellingPriceGross.lte(0)) {
+    throw new Error("sellingPriceLocal must be a positive value");
+  }
   const outputTax = market.computeOutputTax(sellingPriceGross, input.taxRegistered);
   const netRevenue = sellingPriceGross.minus(outputTax);
 
@@ -76,7 +86,7 @@ export function calculate(
 
   const platformFeeSubtotal = Object.values(platformFees).reduce((sum, v) => {
     return sum.plus(new Decimal(v));
-  }, new Decimal("0")) as Decimal;
+  }, new Decimal("0"));
 
   const feeTax = input._planParityDisableFeeTax
     ? r2("0")
@@ -95,26 +105,42 @@ export function calculate(
 
   const breakdown: BreakdownLine[] = [
     { label: "Gross selling price", amount: sellingPriceGross.toFixed(2) },
-    { label: `Output ${market.taxName}`, amount: `-${outputTax.toFixed(2)}` },
-    { label: "Goods cost", amount: `-${goods.toFixed(2)}` },
-    { label: "Shipping", amount: `-${shipping.toFixed(2)}` },
-    { label: "Import duty", amount: `-${duty.toFixed(2)}` },
+    { label: `Output ${market.taxName}`, amount: negativeAmount(outputTax) },
+    { label: "Goods cost", amount: negativeAmount(goods) },
+    { label: "Shipping", amount: negativeAmount(shipping) },
+    { label: "Import duty", amount: negativeAmount(duty) },
     {
       label: `Import ${market.taxName}`,
-      amount: input.taxRegistered ? "0.00" : `-${importTax.toFixed(2)}`,
+      amount: input.taxRegistered ? "0.00" : negativeAmount(importTax),
     },
     ...Object.entries(platformFees).map(([label, amount]) => ({
       label,
-      amount: `-${amount}`,
+      amount: negativeAmount(new Decimal(amount)),
     })),
-    { label: `${market.taxName} on fees`, amount: `-${feeTaxCost.toFixed(2)}` },
-    { label: "Other costs", amount: `-${otherCosts.toFixed(2)}` },
+    { label: `${market.taxName} on fees`, amount: negativeAmount(feeTaxCost) },
+    { label: "Other costs", amount: negativeAmount(otherCosts) },
   ];
 
   assertBreakdownSums(
     breakdown.map((l) => l.amount),
     netProfit.toFixed(2),
   );
+
+  const warnings = emitWarnings({
+    market: input.market,
+    goods,
+    shipping,
+    duty,
+    above: input.market === "AU" ? above : null,
+    importTax,
+    registered: input.taxRegistered,
+    platform: input.platform,
+    adSpend: r2(input.adSpendLocal),
+    shopifyHasAbn: input.shopifyHasAbn,
+  });
+  if (fx.degraded) {
+    warnings.push({ code: "FX_DEGRADED" });
+  }
 
   const result: SimulationResult = {
     currency: market.currency,
@@ -139,18 +165,7 @@ export function calculate(
     marginPct: marginPct.toFixed(2),
     verdict: verdict(netProfit, marginPct),
     monthlyFeeCoverage: null,
-    warnings: emitWarnings({
-      market: input.market,
-      goods,
-      shipping,
-      duty,
-      above: input.market === "AU" ? above : null,
-      importTax,
-      registered: input.taxRegistered,
-      platform: input.platform,
-      adSpend: r2(input.adSpendLocal),
-      shopifyHasAbn: input.shopifyHasAbn,
-    }),
+    warnings,
   };
 
   return result;
