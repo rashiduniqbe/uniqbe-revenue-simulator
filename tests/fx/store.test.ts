@@ -37,6 +37,12 @@ describe("toFxSnapshot", () => {
     expect(snapshot.degraded).toBe(false);
   });
 
+  it("is not degraded at exactly ageDays === 3", () => {
+    const snapshot = toFxSnapshot(rawFrankfurter, new Date("2026-08-28T00:00:00.000Z"));
+    expect(snapshot.ageDays).toBe(3);
+    expect(snapshot.degraded).toBe(false);
+  });
+
   it("becomes degraded once ageDays exceeds 3", () => {
     const snapshot = toFxSnapshot(rawFrankfurter, new Date("2026-08-30T00:00:00.000Z"));
     expect(snapshot.ageDays).toBe(5);

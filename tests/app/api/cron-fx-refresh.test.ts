@@ -14,7 +14,7 @@ vi.mock("../../../src/fx/store", () => ({
   writeFxSnapshot: (...args: unknown[]) => writeFxSnapshot(...args),
 }));
 
-import { POST } from "../../../src/app/api/cron/fx-refresh/route";
+import { GET, POST } from "../../../src/app/api/cron/fx-refresh/route";
 
 const frankfurterSnapshot = {
   base: "USD" as const,
@@ -83,5 +83,38 @@ describe("POST /api/cron/fx-refresh", () => {
     const response = await POST(request("Bearer the-real-secret"));
     expect(response.status).toBe(502);
     expect(writeFxSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("GET with a valid bearer token successfully triggers a refresh", async () => {
+    vi.stubEnv("CRON_SECRET", "the-real-secret");
+    fetchFrankfurterSnapshot.mockResolvedValue(frankfurterSnapshot);
+    const response = await GET(request("Bearer the-real-secret"));
+    expect(response.status).toBe(200);
+    expect(writeFxSnapshot).toHaveBeenCalledWith(frankfurterSnapshot);
+    expect(fetchFallbackSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("GET without a valid token returns 401", async () => {
+    vi.stubEnv("CRON_SECRET", "the-real-secret");
+    const response = await GET(request());
+    expect(response.status).toBe(401);
+    expect(fetchFrankfurterSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("returns 401 for a malformed/non-Bearer Authorization header", async () => {
+    vi.stubEnv("CRON_SECRET", "the-real-secret");
+    const response = await POST(request("Basic abc"));
+    expect(response.status).toBe(401);
+    expect(fetchFrankfurterSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 and does not call the fallback provider when the store write fails", async () => {
+    vi.stubEnv("CRON_SECRET", "the-real-secret");
+    fetchFrankfurterSnapshot.mockResolvedValue(frankfurterSnapshot);
+    writeFxSnapshot.mockRejectedValue(new Error("upstash down"));
+    const response = await POST(request("Bearer the-real-secret"));
+    expect(response.status).toBe(500);
+    expect(fetchFallbackSnapshot).not.toHaveBeenCalled();
+    expect(writeFxSnapshot).toHaveBeenCalledTimes(1);
   });
 });
