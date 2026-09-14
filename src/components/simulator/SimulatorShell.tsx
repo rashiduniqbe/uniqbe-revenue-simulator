@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
+import { ProductPicker } from "./ProductPicker";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -10,10 +12,12 @@ interface SimulatorShellProps {
   fx: FxSnapshotType;
 }
 
-export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
+export function SimulatorShell({ catalogue, fx }: SimulatorShellProps) {
   const market = "UK" as const;
   const currency = market === "UK" ? "GBP" : "AUD";
   const rate = market === "UK" ? fx.rates.GBP : fx.rates.AUD;
+  const [productCode, setProductCode] = useState("");
+  const selectedItem = catalogue.items.find((item) => item.code === productCode) ?? null;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
@@ -26,9 +30,12 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       </header>
 
       <main className="flex-1 px-4 py-6">
-        <p className="text-neutral-600">
-          Select a product to start ({catalogue.items.length} products loaded, {rules.UK.marketLabel}).
-        </p>
+        <ProductPicker items={catalogue.items} selectedCode={productCode} onSelect={setProductCode} />
+        {selectedItem && (
+          <p className="mt-4 text-sm text-neutral-600">
+            Selected: {selectedItem.brand} {selectedItem.name} — cost ${selectedItem.usd} USD
+          </p>
+        )}
       </main>
 
       <DisclaimerBar />
