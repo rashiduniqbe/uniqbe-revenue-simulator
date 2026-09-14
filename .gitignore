@@ -34,3 +34,6 @@ pnpm-debug.log*
 # editor / OS
 .DS_Store
 Thumbs.db
+
+# git worktrees (scratch, not part of history)
+.worktrees/
