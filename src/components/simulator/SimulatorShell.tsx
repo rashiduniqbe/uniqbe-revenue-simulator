@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { useScenario } from "../../lib/url-state";
 import { calculate } from "../../engine";
@@ -9,6 +10,8 @@ import { DisclaimerBar } from "./DisclaimerBar";
 import { ProductPicker } from "./ProductPicker";
 import { InputPanel } from "./InputPanel";
 import { BreakdownTable } from "./BreakdownTable";
+import { VerdictCard } from "./VerdictCard";
+import { CostWaterfall } from "./CostWaterfall";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -18,6 +21,7 @@ interface SimulatorShellProps {
 
 export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   const [scenario, setScenario] = useScenario();
+  const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
   const market = "UK" as const;
   const currency = market === "UK" ? "GBP" : "AUD";
   const rate = market === "UK" ? fx.rates.GBP : fx.rates.AUD;
@@ -28,9 +32,10 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     const item = catalogue.items.find((i) => i.code === code);
     if (!item) return;
     const platformFees = rules.UK.platforms[scenario.platform];
-    const referralDefault = "referralFeePctByCategory" in platformFees
-      ? String(platformFees.referralFeePctByCategory[item.category])
-      : String(platformFees.referralFeePctDefault);
+    const referralDefault =
+      "referralFeePctByCategory" in platformFees
+        ? String(platformFees.referralFeePctByCategory[item.category])
+        : String(platformFees.referralFeePctDefault);
     setScenario({
       ...scenario,
       productCode: code,
@@ -62,7 +67,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
       <main className="flex flex-1 flex-col gap-6 px-4 py-6 md:flex-row">
         <section className="flex flex-col gap-4 md:w-80">
-          <ProductPicker items={catalogue.items} selectedCode={scenario.productCode} onSelect={selectProduct} />
+          <ProductPicker
+            items={catalogue.items}
+            selectedCode={scenario.productCode}
+            onSelect={selectProduct}
+          />
           <InputPanel
             scenario={scenario}
             onChange={setScenario}
@@ -73,7 +82,27 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
         <section className="flex-1">
           {result ? (
-            <BreakdownTable lines={result.breakdown} netProfit={result.netProfit} currency={result.currency} />
+            <div className="flex flex-col gap-4">
+              <VerdictCard
+                verdict={result.verdict}
+                netProfit={result.netProfit}
+                marginPct={result.marginPct}
+                currency={result.currency}
+              />
+              <CostWaterfall
+                lines={result.breakdown}
+                netProfit={result.netProfit}
+                hoveredLabel={hoveredLabel}
+                onHoverLabel={setHoveredLabel}
+              />
+              <BreakdownTable
+                lines={result.breakdown}
+                netProfit={result.netProfit}
+                currency={result.currency}
+                hoveredLabel={hoveredLabel}
+                onHoverLabel={setHoveredLabel}
+              />
+            </div>
           ) : (
             <p className="text-neutral-500">
               Select a product and enter a selling price to see your profit breakdown.
