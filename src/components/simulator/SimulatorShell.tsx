@@ -8,6 +8,7 @@ import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
 import { ProductPicker } from "./ProductPicker";
 import { InputPanel } from "./InputPanel";
+import { BreakdownTable } from "./BreakdownTable";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -72,9 +73,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
         <section className="flex-1">
           {result ? (
-            <p className="text-sm text-neutral-600">
-              Net profit: {result.netProfit} · Margin: {result.marginPct}% · Verdict: {result.verdict}
-            </p>
+            <BreakdownTable lines={result.breakdown} netProfit={result.netProfit} currency={result.currency} />
           ) : (
             <p className="text-neutral-500">
               Select a product and enter a selling price to see your profit breakdown.
