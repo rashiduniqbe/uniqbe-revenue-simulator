@@ -9,6 +9,7 @@ import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
 import { ProductPicker } from "./ProductPicker";
 import { InputPanel } from "./InputPanel";
+import { PriceSuggestion } from "./PriceSuggestion";
 import { BreakdownTable } from "./BreakdownTable";
 import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
@@ -78,6 +79,15 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             rules={rules}
             category={selectedItem?.category ?? null}
           />
+          {selectedItem && (
+            <PriceSuggestion
+              input={{ ...scenario, market: "UK", usd: selectedItem.usd, category: selectedItem.category }}
+              fx={fxInput}
+              rules={rules}
+              disabled={!selectedItem}
+              onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
+            />
+          )}
         </section>
 
         <section className="flex-1">
