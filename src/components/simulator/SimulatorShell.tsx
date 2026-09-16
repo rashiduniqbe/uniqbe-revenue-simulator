@@ -13,6 +13,7 @@ import { PriceSuggestion } from "./PriceSuggestion";
 import { BreakdownTable } from "./BreakdownTable";
 import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
+import { WarningList } from "./WarningList";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -93,6 +94,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         <section className="flex-1">
           {result ? (
             <div className="flex flex-col gap-4">
+              <WarningList warnings={result.warnings} />
               <VerdictCard
                 verdict={result.verdict}
                 netProfit={result.netProfit}
