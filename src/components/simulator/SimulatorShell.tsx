@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { useScenario } from "../../lib/url-state";
+import { isValidDecimalString } from "../../lib/decimal-validation";
 import { calculate } from "../../engine";
 import type { FxInput } from "../../engine/types";
 import { FxBadge } from "./FxBadge";
@@ -48,8 +49,20 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
   const fxInput: FxInput = { rate: String(rate), asOf: fx.asOf, degraded: fx.degraded };
   const sellingPriceValid = Number(scenario.sellingPriceLocal) > 0;
+  // Every one of these fields is fed straight into `new Decimal(...)` inside
+  // calculate() with no validation of its own — an empty, blank, or
+  // malformed value (e.g. from clearing an input, or a deep link missing a
+  // param) would throw and crash the page. Gate the call so `result` simply
+  // stays null (same as the "no price entered" state) until all of them
+  // parse cleanly.
+  const numericFieldsValid =
+    isValidDecimalString(scenario.inboundShippingLocal) &&
+    isValidDecimalString(scenario.packagingLocal) &&
+    isValidDecimalString(scenario.adSpendLocal) &&
+    isValidDecimalString(scenario.dutyPct) &&
+    isValidDecimalString(scenario.referralFeePct);
   const result =
-    selectedItem && sellingPriceValid
+    selectedItem && sellingPriceValid && numericFieldsValid
       ? calculate(
           { ...scenario, market: "UK", usd: selectedItem.usd, category: selectedItem.category },
           fxInput,

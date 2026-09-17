@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { suggestPrice } from "../../engine";
 import type { SimulationInput, FxInput } from "../../engine/types";
 import type { MarketRulesType } from "../../lib/schemas";
+import { isValidDecimalString } from "../../lib/decimal-validation";
+
+type SuggestionInput = Omit<SimulationInput, "sellingPriceLocal">;
 
 interface PriceSuggestionProps {
-  input: Omit<SimulationInput, "sellingPriceLocal">;
+  input: SuggestionInput;
   fx: FxInput;
   rules: MarketRulesType;
   onApply: (price: string) => void;
@@ -15,14 +18,39 @@ interface PriceSuggestionProps {
 
 const DEFAULT_TARGET_MARGIN_PCT = 20;
 
+function isSuggestionInputValid(input: SuggestionInput): boolean {
+  return (
+    isValidDecimalString(input.inboundShippingLocal) &&
+    isValidDecimalString(input.packagingLocal) &&
+    isValidDecimalString(input.adSpendLocal) &&
+    isValidDecimalString(input.dutyPct) &&
+    isValidDecimalString(input.referralFeePct)
+  );
+}
+
 export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSuggestionProps) {
   const [targetMarginPct, setTargetMarginPct] = useState(DEFAULT_TARGET_MARGIN_PCT);
   const [result, setResult] = useState<{ price: string; steps: number } | null>(null);
   const [hasSuggested, setHasSuggested] = useState(false);
+  // Tracks the scenario input that produced the current `result`, so a
+  // suggestion computed against a stale scenario (platform/input changed
+  // after suggesting) never lingers as something Apply-able.
+  const suggestedForInputRef = useRef<SuggestionInput | null>(null);
+
+  useEffect(() => {
+    const suggestedFor = suggestedForInputRef.current;
+    if (suggestedFor !== null && JSON.stringify(suggestedFor) !== JSON.stringify(input)) {
+      setResult(null);
+      setHasSuggested(false);
+      suggestedForInputRef.current = null;
+    }
+  }, [input]);
 
   function handleSuggest() {
+    if (!isSuggestionInputValid(input)) return;
     setResult(suggestPrice(input, fx, rules, targetMarginPct));
     setHasSuggested(true);
+    suggestedForInputRef.current = input;
   }
 
   return (
