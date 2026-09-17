@@ -1,4 +1,5 @@
 import { VERDICT_MARGIN_THRESHOLD_PCT } from "../../engine/verdict";
+import { CURRENCY_SYMBOL } from "../../lib/breakdown-format";
 
 interface VerdictCardProps {
   verdict: "profitable" | "marginal" | "loss-making";
@@ -12,8 +13,6 @@ const VERDICT_STYLE: Record<VerdictCardProps["verdict"], { label: string; color:
   marginal: { label: "MARGINAL", color: "#B45309" },
   "loss-making": { label: "LOSS-MAKING", color: "#B91C1C" },
 };
-
-const CURRENCY_SYMBOL: Record<"GBP" | "AUD", string> = { GBP: "£", AUD: "A$" };
 
 export function VerdictCard({ verdict, netProfit, marginPct, currency }: VerdictCardProps) {
   const style = VERDICT_STYLE[verdict];

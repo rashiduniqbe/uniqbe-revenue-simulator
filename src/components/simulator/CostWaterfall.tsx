@@ -1,5 +1,6 @@
 import type { BreakdownLine } from "../../engine/types";
 import { computeWaterfallSegments } from "../../lib/waterfall";
+import { platformFeeLabel } from "../../lib/breakdown-format";
 
 interface CostWaterfallProps {
   lines: BreakdownLine[];
@@ -45,7 +46,7 @@ export function CostWaterfall({
           }}
           onMouseEnter={() => onHoverLabel(segment.label)}
           onMouseLeave={() => onHoverLabel(null)}
-          title={segment.label}
+          title={platformFeeLabel(segment.label)}
         />
       ))}
     </div>
