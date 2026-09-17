@@ -49,23 +49,24 @@ export const WARNING_COPY: Record<
   },
 };
 
-const PRIORITY_ORDER: WarningCode[] = [
-  "FX_DEGRADED",
-  "CUSTOMS_DECLARED_VALUE_UNCONFIRMED",
-  "DOORSTEP_LIABILITY",
-  "IMPORT_TAX_CASHFLOW",
-  "AU_BELOW_THRESHOLD",
-  "AU_NEAR_THRESHOLD",
-  "SHOPIFY_NO_AUDIENCE",
-  "SHOPIFY_AU_GST_ON_SUB",
-  "NOT_TAX_ADVICE",
-];
+// A Record (not an array + indexOf) so adding a 10th WarningCode without
+// updating this map is a compile error, the same way WARNING_COPY already
+// forces every code to be handled. A forgotten array entry would otherwise
+// silently sort that code first via indexOf() === -1.
+const PRIORITY: Record<WarningCode, number> = {
+  FX_DEGRADED: 0,
+  CUSTOMS_DECLARED_VALUE_UNCONFIRMED: 1,
+  DOORSTEP_LIABILITY: 2,
+  IMPORT_TAX_CASHFLOW: 3,
+  AU_BELOW_THRESHOLD: 4,
+  AU_NEAR_THRESHOLD: 5,
+  SHOPIFY_NO_AUDIENCE: 6,
+  SHOPIFY_AU_GST_ON_SUB: 7,
+  NOT_TAX_ADVICE: 8,
+};
 
 export function sortWarningsByPriority(
   warnings: EngineWarning[]
 ): EngineWarning[] {
-  return [...warnings].sort(
-    (a, b) =>
-      PRIORITY_ORDER.indexOf(a.code) - PRIORITY_ORDER.indexOf(b.code)
-  );
+  return [...warnings].sort((a, b) => PRIORITY[a.code] - PRIORITY[b.code]);
 }
