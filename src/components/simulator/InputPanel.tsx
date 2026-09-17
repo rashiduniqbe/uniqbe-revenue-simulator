@@ -25,7 +25,12 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
     } else if ("referralFeePctDefault" in platformFees) {
       referralDefault = String(platformFees.referralFeePctDefault);
     }
-    onChange({ ...scenario, platform, referralFeePct: referralDefault });
+    // Ad spend is only ever shown/editable on Shopify, but calculate()
+    // deducts it unconditionally regardless of platform. Reset it so a
+    // value entered on Shopify doesn't silently keep costing profit after
+    // switching away to a platform with no visible field for it.
+    const adSpendLocal = platform === "shopify" ? scenario.adSpendLocal : "0.00";
+    onChange({ ...scenario, platform, referralFeePct: referralDefault, adSpendLocal });
   }
 
   return (
