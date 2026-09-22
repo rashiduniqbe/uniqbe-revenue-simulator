@@ -2,6 +2,7 @@
 
 import type { ScenarioParams } from "../../lib/url-state";
 import type { MarketRulesType, CategorySlugType } from "../../lib/schemas";
+import { deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 
 interface InputPanelProps {
   scenario: ScenarioParams;
@@ -18,13 +19,9 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
   }
 
   function onPlatformChange(platform: ScenarioParams["platform"]) {
-    const platformFees = marketRules.platforms[platform];
-    let referralDefault = scenario.referralFeePct;
-    if (category && "referralFeePctByCategory" in platformFees) {
-      referralDefault = String(platformFees.referralFeePctByCategory[category]);
-    } else if ("referralFeePctDefault" in platformFees) {
-      referralDefault = String(platformFees.referralFeePctDefault);
-    }
+    const referralDefault = category
+      ? deriveReferralFeeDefault(rules, scenario.market, platform, category)
+      : scenario.referralFeePct;
     // Ad spend is only ever shown/editable on Shopify, but calculate()
     // deducts it unconditionally regardless of platform. Reset it so a
     // value entered on Shopify doesn't silently keep costing profit after

@@ -5,7 +5,8 @@ import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/s
 import { useScenario } from "../../lib/url-state";
 import { isValidDecimalString } from "../../lib/decimal-validation";
 import { calculate } from "../../engine";
-import type { FxInput } from "../../engine/types";
+import type { FxInput, Market } from "../../engine/types";
+import { deriveDutyPctDefault, deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
 import { ProductPicker } from "./ProductPicker";
@@ -15,6 +16,7 @@ import { BreakdownTable } from "./BreakdownTable";
 import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
+import { MarketTabs } from "./MarketTabs";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -25,7 +27,7 @@ interface SimulatorShellProps {
 export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   const [scenario, setScenario] = useScenario();
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
-  const market = "UK" as const;
+  const market = scenario.market;
   const currency = market === "UK" ? "GBP" : "AUD";
   const rate = market === "UK" ? fx.rates.GBP : fx.rates.AUD;
 
@@ -34,17 +36,26 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   function selectProduct(code: string) {
     const item = catalogue.items.find((i) => i.code === code);
     if (!item) return;
-    const platformFees = rules.UK.platforms[scenario.platform];
-    const referralDefault =
-      "referralFeePctByCategory" in platformFees
-        ? String(platformFees.referralFeePctByCategory[item.category])
-        : String(platformFees.referralFeePctDefault);
     setScenario({
       ...scenario,
       productCode: code,
-      dutyPct: String(rules.UK.dutyPctByCategory[item.category]),
-      referralFeePct: referralDefault,
+      dutyPct: deriveDutyPctDefault(rules, scenario.market, item.category),
+      referralFeePct: deriveReferralFeeDefault(rules, scenario.market, scenario.platform, item.category),
     });
+  }
+
+  function selectMarket(nextMarket: Market) {
+    const derivedFields = selectedItem
+      ? {
+          dutyPct: deriveDutyPctDefault(rules, nextMarket, selectedItem.category),
+          referralFeePct: deriveReferralFeeDefault(rules, nextMarket, scenario.platform, selectedItem.category),
+        }
+      : {};
+    // ebayFreeTier/shopifyHasAbn have no effect outside AU (see src/engine/platforms/ebay.ts
+    // and src/engine/warnings.ts) but leaving a toggle silently armed after switching away
+    // from AU is confusing state to carry in the URL.
+    const resetAuFields = nextMarket === "AU" ? {} : { ebayFreeTier: false, shopifyHasAbn: false };
+    setScenario({ ...scenario, market: nextMarket, ...derivedFields, ...resetAuFields });
   }
 
   const fxInput: FxInput = { rate: String(rate), asOf: fx.asOf, degraded: fx.degraded };
@@ -64,7 +75,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   const result =
     selectedItem && sellingPriceValid && numericFieldsValid
       ? calculate(
-          { ...scenario, market: "UK", usd: selectedItem.usd, category: selectedItem.category },
+          { ...scenario, usd: selectedItem.usd, category: selectedItem.category },
           fxInput,
           rules,
         )
@@ -75,7 +86,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       <header className="border-b border-neutral-200 bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Uniqbe Price Simulator</h1>
-          <span className="rounded-full border border-neutral-300 px-3 py-1 text-sm">UK</span>
+          <MarketTabs market={scenario.market} onChange={selectMarket} />
         </div>
         <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
       </header>
@@ -95,7 +106,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
           />
           {selectedItem && (
             <PriceSuggestion
-              input={{ ...scenario, market: "UK", usd: selectedItem.usd, category: selectedItem.category }}
+              input={{ ...scenario, usd: selectedItem.usd, category: selectedItem.category }}
               fx={fxInput}
               rules={rules}
               disabled={!selectedItem}
