@@ -17,6 +17,7 @@ import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
+import { ThresholdBanner } from "./ThresholdBanner";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -118,6 +119,9 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         <section className="flex-1">
           {result ? (
             <div className="flex flex-col gap-4">
+              {result.auAboveThreshold !== null && (
+                <ThresholdBanner aboveThreshold={result.auAboveThreshold} />
+              )}
               <WarningList warnings={result.warnings} />
               <VerdictCard
                 verdict={result.verdict}
