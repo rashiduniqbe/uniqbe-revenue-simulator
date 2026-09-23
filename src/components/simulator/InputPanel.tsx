@@ -22,12 +22,10 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
     const referralDefault = category
       ? deriveReferralFeeDefault(rules, scenario.market, platform, category)
       : scenario.referralFeePct;
-    // Ad spend is only ever shown/editable on Shopify, but calculate()
-    // deducts it unconditionally regardless of platform. Reset it so a
-    // value entered on Shopify doesn't silently keep costing profit after
-    // switching away to a platform with no visible field for it.
     const adSpendLocal = platform === "shopify" ? scenario.adSpendLocal : "0.00";
-    onChange({ ...scenario, platform, referralFeePct: referralDefault, adSpendLocal });
+    const ebayFreeTier = platform === "ebay" ? scenario.ebayFreeTier : false;
+    const shopifyHasAbn = platform === "shopify" ? scenario.shopifyHasAbn : false;
+    onChange({ ...scenario, platform, referralFeePct: referralDefault, adSpendLocal, ebayFreeTier, shopifyHasAbn });
   }
 
   return (
@@ -114,6 +112,28 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
             onChange={(event) => set("adSpendLocal", event.target.value)}
           />
         </div>
+      )}
+
+      {scenario.market === "AU" && scenario.platform === "ebay" && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={scenario.ebayFreeTier}
+            onChange={(event) => set("ebayFreeTier", event.target.checked)}
+          />
+          eBay free tier (trailing sales ≤ A$25,000)?
+        </label>
+      )}
+
+      {scenario.market === "AU" && scenario.platform === "shopify" && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={scenario.shopifyHasAbn}
+            onChange={(event) => set("shopifyHasAbn", event.target.checked)}
+          />
+          Have an ABN on file?
+        </label>
       )}
 
       <div>

@@ -40,4 +40,19 @@ describe("encodeScenario / decodeScenario", () => {
     expect(decoded.taxRegistered).toBe(true);
     expect(decoded.shopifyHasAbn).toBe(false);
   });
+
+  it("round-trips an AU scenario with ebayFreeTier and shopifyHasAbn set", () => {
+    const scenario = {
+      ...DEFAULT_SCENARIO,
+      market: "AU" as const,
+      platform: "ebay" as const,
+      ebayFreeTier: true,
+      shopifyHasAbn: true,
+    };
+    const params = encodeScenario(scenario);
+    expect(decodeScenario(params)).toEqual(scenario);
+    expect(params.get("m")).toBe("AU");
+    expect(params.get("et")).toBe("true");
+    expect(params.get("abn")).toBe("true");
+  });
 });
