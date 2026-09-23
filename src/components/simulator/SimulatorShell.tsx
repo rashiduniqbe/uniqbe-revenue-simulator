@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
-import { useScenario } from "../../lib/url-state";
+import { DEFAULT_SCENARIO, useScenario } from "../../lib/url-state";
 import { isValidDecimalString } from "../../lib/decimal-validation";
 import { calculate } from "../../engine";
 import type { FxInput, Market } from "../../engine/types";
@@ -40,8 +40,8 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     setScenario({
       ...scenario,
       productCode: code,
-      dutyPct: deriveDutyPctDefault(rules, scenario.market, item.category),
-      referralFeePct: deriveReferralFeeDefault(rules, scenario.market, scenario.platform, item.category),
+      dutyPct: deriveDutyPctDefault(rules, market, item.category),
+      referralFeePct: deriveReferralFeeDefault(rules, market, scenario.platform, item.category),
     });
   }
 
@@ -49,14 +49,35 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     const derivedFields = selectedItem
       ? {
           dutyPct: deriveDutyPctDefault(rules, nextMarket, selectedItem.category),
-          referralFeePct: deriveReferralFeeDefault(rules, nextMarket, scenario.platform, selectedItem.category),
+          referralFeePct: deriveReferralFeeDefault(
+            rules,
+            nextMarket,
+            scenario.platform,
+            selectedItem.category,
+          ),
         }
       : {};
     // ebayFreeTier/shopifyHasAbn have no effect outside AU (see src/engine/platforms/ebay.ts
     // and src/engine/warnings.ts) but leaving a toggle silently armed after switching away
     // from AU is confusing state to carry in the URL.
     const resetAuFields = nextMarket === "AU" ? {} : { ebayFreeTier: false, shopifyHasAbn: false };
-    setScenario({ ...scenario, market: nextMarket, ...derivedFields, ...resetAuFields });
+    // Local-currency amounts do not carry meaning across markets — a price
+    // entered in GBP is not the same real value typed as AUD. Reset them to
+    // DEFAULT_SCENARIO's empty state on every market switch so the UI doesn't
+    // silently present a stale number in the new currency.
+    const resetLocalCurrencyFields = {
+      sellingPriceLocal: DEFAULT_SCENARIO.sellingPriceLocal,
+      inboundShippingLocal: DEFAULT_SCENARIO.inboundShippingLocal,
+      packagingLocal: DEFAULT_SCENARIO.packagingLocal,
+      adSpendLocal: DEFAULT_SCENARIO.adSpendLocal,
+    };
+    setScenario({
+      ...scenario,
+      market: nextMarket,
+      ...derivedFields,
+      ...resetAuFields,
+      ...resetLocalCurrencyFields,
+    });
   }
 
   const fxInput: FxInput = { rate: String(rate), asOf: fx.asOf, degraded: fx.degraded };
@@ -87,7 +108,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       <header className="border-b border-neutral-200 bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Uniqbe Price Simulator</h1>
-          <MarketTabs market={scenario.market} onChange={selectMarket} />
+          <MarketTabs market={market} onChange={selectMarket} />
         </div>
         <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
       </header>
@@ -122,7 +143,13 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
               {result.auAboveThreshold !== null && (
                 <ThresholdBanner aboveThreshold={result.auAboveThreshold} />
               )}
-              <WarningList warnings={result.warnings} />
+              <WarningList
+                warnings={
+                  result.auAboveThreshold === false
+                    ? result.warnings.filter((w) => w.code !== "AU_BELOW_THRESHOLD")
+                    : result.warnings
+                }
+              />
               <VerdictCard
                 verdict={result.verdict}
                 netProfit={result.netProfit}

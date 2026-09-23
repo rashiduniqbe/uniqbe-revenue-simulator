@@ -22,10 +22,22 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
     const referralDefault = category
       ? deriveReferralFeeDefault(rules, scenario.market, platform, category)
       : scenario.referralFeePct;
+    // calculate() deducts adSpendLocal unconditionally regardless of platform, and
+    // ebayFreeTier/shopifyHasAbn only apply on their own platform — so a value left
+    // over from a previous platform would silently keep affecting the result (e.g.
+    // ad spend entered on Shopify still costing profit after switching to Amazon).
+    // Reset all three whenever they no longer apply to the newly selected platform.
     const adSpendLocal = platform === "shopify" ? scenario.adSpendLocal : "0.00";
     const ebayFreeTier = platform === "ebay" ? scenario.ebayFreeTier : false;
     const shopifyHasAbn = platform === "shopify" ? scenario.shopifyHasAbn : false;
-    onChange({ ...scenario, platform, referralFeePct: referralDefault, adSpendLocal, ebayFreeTier, shopifyHasAbn });
+    onChange({
+      ...scenario,
+      platform,
+      referralFeePct: referralDefault,
+      adSpendLocal,
+      ebayFreeTier,
+      shopifyHasAbn,
+    });
   }
 
   return (
