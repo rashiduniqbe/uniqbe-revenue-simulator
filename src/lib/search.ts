@@ -7,10 +7,7 @@ const FUSE_OPTIONS = {
   ignoreLocation: true,
 };
 
-export function filterProducts(
-  items: CatalogueItemType[],
-  query: string,
-): CatalogueItemType[] {
+export function filterProducts(items: CatalogueItemType[], query: string): CatalogueItemType[] {
   const trimmed = query.trim();
   if (!trimmed) {
     return items;

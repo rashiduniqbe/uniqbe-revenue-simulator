@@ -28,7 +28,11 @@ describe("encodeScenario / decodeScenario", () => {
   });
 
   it("uses the short param names from the plan's URL schema", () => {
-    const params = encodeScenario({ ...DEFAULT_SCENARIO, productCode: "OP00572", sellingPriceLocal: "599.99" });
+    const params = encodeScenario({
+      ...DEFAULT_SCENARIO,
+      productCode: "OP00572",
+      sellingPriceLocal: "599.99",
+    });
     expect(params.get("p")).toBe("OP00572");
     expect(params.get("sp")).toBe("599.99");
     expect(params.get("m")).toBe("UK");

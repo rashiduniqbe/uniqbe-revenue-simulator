@@ -93,8 +93,8 @@ export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSu
       {result === null && hasSuggested && (
         <p className="text-sm text-neutral-500">
           A {targetMarginPct}% margin isn&rsquo;t reachable at any selling price for this setup —
-          the platform fees alone exceed what&rsquo;s left after costs. Try a lower target margin
-          or a different platform.
+          the platform fees alone exceed what&rsquo;s left after costs. Try a lower target margin or
+          a different platform.
         </p>
       )}
     </div>

@@ -31,7 +31,9 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
       {query.trim() !== "" && (
         <ul className="max-h-64 overflow-y-auto rounded border border-neutral-200 bg-white">
           {results.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-neutral-500">No products match &ldquo;{query}&rdquo;.</li>
+            <li className="px-3 py-2 text-sm text-neutral-500">
+              No products match &ldquo;{query}&rdquo;.
+            </li>
           ) : (
             results.map((item) => (
               <li key={item.code}>

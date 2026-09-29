@@ -22,9 +22,7 @@ describe("WARNING_COPY", () => {
   });
 
   it("marks exactly NOT_TAX_ADVICE and DOORSTEP_LIABILITY as always visible", () => {
-    const alwaysVisible = ALL_CODES.filter(
-      (code) => WARNING_COPY[code].alwaysVisible
-    );
+    const alwaysVisible = ALL_CODES.filter((code) => WARNING_COPY[code].alwaysVisible);
     expect(alwaysVisible.sort()).toEqual(["DOORSTEP_LIABILITY", "NOT_TAX_ADVICE"]);
   });
 });

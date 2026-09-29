@@ -1,9 +1,4 @@
-import {
-  parseAsBoolean,
-  parseAsString,
-  parseAsStringEnum,
-  useQueryStates,
-} from "nuqs";
+import { parseAsBoolean, parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import type { SimulationInput } from "../engine/types";
 
 export type ScenarioParams = Omit<SimulationInput, "usd" | "category">;
@@ -81,7 +76,9 @@ export function encodeScenario(scenario: ScenarioParams): URLSearchParams {
 }
 
 // Maps short parser keys to full field names for component use
-function shortsToFull(shorts: ReturnType<typeof useQueryStates<typeof scenarioParsers>>[0]): ScenarioParams {
+function shortsToFull(
+  shorts: ReturnType<typeof useQueryStates<typeof scenarioParsers>>[0],
+): ScenarioParams {
   return {
     market: shorts.m as ScenarioParams["market"],
     productCode: shorts.p,
@@ -120,7 +117,10 @@ function fullToShorts(full: ScenarioParams) {
   };
 }
 
-export function useScenario(): [ScenarioParams, (next: ScenarioParams | ((prev: ScenarioParams) => ScenarioParams)) => void] {
+export function useScenario(): [
+  ScenarioParams,
+  (next: ScenarioParams | ((prev: ScenarioParams) => ScenarioParams)) => void,
+] {
   const [shorts, setShorts] = useQueryStates(scenarioParsers);
 
   const scenario = shortsToFull(shorts);

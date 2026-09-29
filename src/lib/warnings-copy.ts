@@ -1,9 +1,6 @@
 import type { EngineWarning, WarningCode } from "../engine/types";
 
-export const WARNING_COPY: Record<
-  WarningCode,
-  { message: string; alwaysVisible: boolean }
-> = {
+export const WARNING_COPY: Record<WarningCode, { message: string; alwaysVisible: boolean }> = {
   FX_DEGRADED: {
     message: "This exchange rate is more than a few days old.",
     alwaysVisible: false,
@@ -19,8 +16,7 @@ export const WARNING_COPY: Record<
     alwaysVisible: true,
   },
   IMPORT_TAX_CASHFLOW: {
-    message:
-      "Import tax is reclaimable, but you pay it upfront before you reclaim it.",
+    message: "Import tax is reclaimable, but you pay it upfront before you reclaim it.",
     alwaysVisible: false,
   },
   AU_BELOW_THRESHOLD: {
@@ -29,18 +25,15 @@ export const WARNING_COPY: Record<
     alwaysVisible: false,
   },
   AU_NEAR_THRESHOLD: {
-    message:
-      "This product is close to the A$1,000 threshold — a small FX move could push it over.",
+    message: "This product is close to the A$1,000 threshold — a small FX move could push it over.",
     alwaysVisible: false,
   },
   SHOPIFY_NO_AUDIENCE: {
-    message:
-      "Shopify has no built-in marketplace traffic — a $0 ad budget is unrealistic here.",
+    message: "Shopify has no built-in marketplace traffic — a $0 ad budget is unrealistic here.",
     alwaysVisible: false,
   },
   SHOPIFY_AU_GST_ON_SUB: {
-    message:
-      "Without an ABN on file, 10% GST is added to your Shopify subscription itself.",
+    message: "Without an ABN on file, 10% GST is added to your Shopify subscription itself.",
     alwaysVisible: false,
   },
   NOT_TAX_ADVICE: {
@@ -65,8 +58,6 @@ const PRIORITY: Record<WarningCode, number> = {
   NOT_TAX_ADVICE: 8,
 };
 
-export function sortWarningsByPriority(
-  warnings: EngineWarning[]
-): EngineWarning[] {
+export function sortWarningsByPriority(warnings: EngineWarning[]): EngineWarning[] {
   return [...warnings].sort((a, b) => PRIORITY[a.code] - PRIORITY[b.code]);
 }

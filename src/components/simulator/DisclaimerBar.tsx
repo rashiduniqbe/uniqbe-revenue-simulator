@@ -5,8 +5,8 @@ export function DisclaimerBar() {
       style={{ position: "sticky" }}
       role="note"
     >
-      Final price is confirmed on Uniqbe&rsquo;s invoice, not by this tool. Estimate only —
-      not tax advice.
+      Final price is confirmed on Uniqbe&rsquo;s invoice, not by this tool. Estimate only — not tax
+      advice.
     </div>
   );
 }
