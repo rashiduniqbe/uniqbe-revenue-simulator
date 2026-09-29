@@ -140,8 +140,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         <section className="flex-1">
           {result ? (
             <div className="flex flex-col gap-4">
-              {result.auAboveThreshold !== null && (
-                <ThresholdBanner aboveThreshold={result.auAboveThreshold} />
+              {result.auAboveThreshold !== null && rules.AU.deMinimisLocal !== null && (
+                <ThresholdBanner
+                  aboveThreshold={result.auAboveThreshold}
+                  thresholdLocal={rules.AU.deMinimisLocal}
+                />
               )}
               <WarningList
                 warnings={

@@ -187,6 +187,54 @@ describe("property: threshold is a step, invariant to freight (invariant 4)", ()
     const above: SimulationInput = { ...below, usd: 716.845 };
     expect(calculate(above, auFx, rules).auAboveThreshold).toBe(true);
   });
+
+  it("comparand config is live: flipping it to goods+freight makes freight matter", () => {
+    const input: SimulationInput = {
+      market: "AU",
+      productCode: "TEST",
+      usd: 716.84, // x 1.395 = A$999.99 goods
+      category: "mobile-phone",
+      platform: "amazon",
+      taxRegistered: false,
+      sellingPriceLocal: "1400.00",
+      inboundShippingLocal: "20.00",
+      packagingLocal: "0",
+      adSpendLocal: "0",
+      dutyPct: "0",
+      referralFeePct: "8",
+      amazonPlan: "individual",
+      shopifyPlan: "basic",
+      shopifyHasAbn: false,
+      ebayFreeTier: false,
+    };
+    const flipped = { ...rules, AU: { ...rules.AU, deMinimisComparand: "goods+freight" as const } };
+    expect(calculate(input, auFx, rules).auAboveThreshold).toBe(false);
+    expect(calculate(input, auFx, flipped).auAboveThreshold).toBe(true);
+  });
+
+  it("threshold config is live: lowering deMinimisLocal moves the step", () => {
+    const input: SimulationInput = {
+      market: "AU",
+      productCode: "TEST",
+      usd: 500, // x 1.395 = A$697.50 goods
+      category: "mobile-phone",
+      platform: "amazon",
+      taxRegistered: false,
+      sellingPriceLocal: "1400.00",
+      inboundShippingLocal: "0.00",
+      packagingLocal: "0",
+      adSpendLocal: "0",
+      dutyPct: "0",
+      referralFeePct: "8",
+      amazonPlan: "individual",
+      shopifyPlan: "basic",
+      shopifyHasAbn: false,
+      ebayFreeTier: false,
+    };
+    const lowered = { ...rules, AU: { ...rules.AU, deMinimisLocal: 600 } };
+    expect(calculate(input, auFx, rules).auAboveThreshold).toBe(false);
+    expect(calculate(input, auFx, lowered).auAboveThreshold).toBe(true);
+  });
 });
 
 describe("property: solver round-trips (invariant 5)", () => {

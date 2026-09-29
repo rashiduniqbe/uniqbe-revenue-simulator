@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { Money } from "../../../src/engine/money";
 import { auModule, comparand } from "../../../src/engine/markets/au";
 
+const AU_RULE = { deMinimisLocal: 1000, deMinimisComparand: "goods" } as const;
+
 describe("comparand", () => {
   it("returns goods alone for 'goods'", () => {
     expect(comparand("goods", new Money("999.99"), new Money("500.00")).toFixed(2)).toBe("999.99");
@@ -30,19 +32,21 @@ describe("auModule", () => {
   });
 
   it("GF-06a: goods A$999.99, freight A$20 -> below (goods-only comparand)", () => {
-    expect(auModule.isAboveThreshold(new Money("999.99"), new Money("20.00"))).toBe(false);
+    expect(auModule.isAboveThreshold(new Money("999.99"), new Money("20.00"), AU_RULE)).toBe(false);
   });
 
   it("GF-06b: goods exactly A$1,000.00 -> above (>= is inclusive)", () => {
-    expect(auModule.isAboveThreshold(new Money("1000.00"), new Money("20.00"))).toBe(true);
+    expect(auModule.isAboveThreshold(new Money("1000.00"), new Money("20.00"), AU_RULE)).toBe(true);
   });
 
   it("GF-06c negative control: same goods as GF-06a, freight raised to A$500 -> still below", () => {
-    expect(auModule.isAboveThreshold(new Money("999.99"), new Money("500.00"))).toBe(false);
+    expect(auModule.isAboveThreshold(new Money("999.99"), new Money("500.00"), AU_RULE)).toBe(
+      false,
+    );
   });
 
   it("GF-05: goods A$2301.75 -> above", () => {
-    expect(auModule.isAboveThreshold(new Money("2301.75"), new Money("25.00"))).toBe(true);
+    expect(auModule.isAboveThreshold(new Money("2301.75"), new Money("25.00"), AU_RULE)).toBe(true);
   });
 
   it("computes import tax at 10% on goods+shipping+duty when above (GF-05)", () => {
@@ -69,5 +73,40 @@ describe("auModule", () => {
     // Not directly covered by a GF calc fixture (SV-03/SV-04 exercise it via the solver);
     // verified by hand: 1065.27 x 10/110 = 96.8427... -> 96.84
     expect(auModule.computeOutputTax(new Money("1065.27"), true).toFixed(2)).toBe("96.84");
+  });
+});
+
+describe("auModule.isAboveThreshold reads its rule from config (AGENTS.md 5a)", () => {
+  it("goods+freight comparand: freight pushes goods A$999.99 over the line", () => {
+    expect(
+      auModule.isAboveThreshold(new Money("999.99"), new Money("20.00"), {
+        deMinimisLocal: 1000,
+        deMinimisComparand: "goods+freight",
+      }),
+    ).toBe(true);
+  });
+
+  it("threshold value is read, not inlined: A$600 goods is above a A$500 threshold", () => {
+    expect(
+      auModule.isAboveThreshold(new Money("600.00"), new Money("0.00"), {
+        deMinimisLocal: 500,
+        deMinimisComparand: "goods",
+      }),
+    ).toBe(true);
+  });
+
+  it("throws when deMinimisLocal is null", () => {
+    expect(() =>
+      auModule.isAboveThreshold(new Money("1"), new Money("0"), {
+        deMinimisLocal: null,
+        deMinimisComparand: "goods",
+      }),
+    ).toThrow(/deMinimisLocal/);
+  });
+
+  it("throws when deMinimisComparand is missing", () => {
+    expect(() =>
+      auModule.isAboveThreshold(new Money("1"), new Money("0"), { deMinimisLocal: 1000 }),
+    ).toThrow(/deMinimisComparand/);
   });
 });
