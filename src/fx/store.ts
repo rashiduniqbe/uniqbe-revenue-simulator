@@ -11,8 +11,16 @@ type RedisLike = {
   set: (key: string, value: unknown) => Promise<unknown>;
 };
 
-function defaultRedisClient(): RedisLike {
-  return Redis.fromEnv();
+// Returns null when Redis isn't configured, so reads fall straight to the seed
+// instead of waiting out @upstash/redis's retry backoff on an empty URL
+// (spec §11.4: "Kill Redis → app serves seed rates … no crash").
+export function redisFromEnv(
+  env: Record<string, string | undefined> = process.env,
+): RedisLike | null {
+  const url = env.UPSTASH_REDIS_REST_URL || env.KV_REST_API_URL;
+  const token = env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  return new Redis({ url, token });
 }
 
 export function computeAgeDays(asOf: string, now: Date = new Date()): number {
@@ -32,9 +40,10 @@ function seedSnapshot(now: Date): FxSnapshotType {
 }
 
 export async function readFxSnapshot(
-  redis: RedisLike = defaultRedisClient(),
+  redis: RedisLike | null = redisFromEnv(),
   now: Date = new Date(),
 ): Promise<FxSnapshotType> {
+  if (redis === null) return seedSnapshot(now);
   try {
     const stored = await redis.get(FX_REDIS_KEY);
     if (stored === null || stored === undefined) {
@@ -48,7 +57,8 @@ export async function readFxSnapshot(
 
 export async function writeFxSnapshot(
   raw: FxRawSnapshotType,
-  redis: RedisLike = defaultRedisClient(),
+  redis: RedisLike | null = redisFromEnv(),
 ): Promise<void> {
+  if (redis === null) throw new Error("Redis is not configured (UPSTASH_REDIS_REST_URL/TOKEN)");
   await redis.set(FX_REDIS_KEY, raw);
 }

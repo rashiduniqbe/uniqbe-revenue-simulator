@@ -18,7 +18,9 @@
     "catalogue:build": "tsx scripts/build-catalogue.ts",
     "catalogue:check": "tsx scripts/build-catalogue.ts --verify",
     "catalogue:diff": "tsx scripts/catalogue-diff.ts",
-    "fx:seed": "tsx scripts/seed-fx.ts"
+    "fx:seed": "tsx scripts/seed-fx.ts",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.4",
@@ -33,6 +35,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.20.2",
     "@types/react": "^19.3.0",

@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { computeAgeDays, toFxSnapshot, readFxSnapshot, writeFxSnapshot } from "../../src/fx/store";
+import {
+  computeAgeDays,
+  toFxSnapshot,
+  readFxSnapshot,
+  writeFxSnapshot,
+  redisFromEnv,
+} from "../../src/fx/store";
 import type { FxRawSnapshotType } from "../../src/lib/schemas";
 
 const rawFrankfurter: FxRawSnapshotType = {
@@ -86,5 +92,38 @@ describe("writeFxSnapshot", () => {
     const redis = { get: vi.fn(), set: vi.fn().mockResolvedValue("OK") };
     await writeFxSnapshot(rawFrankfurter, redis);
     expect(redis.set).toHaveBeenCalledWith("fx:snapshot", rawFrankfurter);
+  });
+});
+
+describe("redisFromEnv", () => {
+  it("returns null when URL or token is missing, so reads never wait on retries", () => {
+    expect(redisFromEnv({})).toBeNull();
+    expect(redisFromEnv({ UPSTASH_REDIS_REST_URL: "https://x.upstash.io" })).toBeNull();
+    expect(redisFromEnv({ UPSTASH_REDIS_REST_TOKEN: "t" })).toBeNull();
+    expect(redisFromEnv({ UPSTASH_REDIS_REST_URL: "", UPSTASH_REDIS_REST_TOKEN: "" })).toBeNull();
+  });
+
+  it("returns a client when both are set (either naming convention)", () => {
+    expect(
+      redisFromEnv({
+        UPSTASH_REDIS_REST_URL: "https://x.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN: "t",
+      }),
+    ).not.toBeNull();
+    expect(
+      redisFromEnv({ KV_REST_API_URL: "https://x.upstash.io", KV_REST_API_TOKEN: "t" }),
+    ).not.toBeNull();
+  });
+});
+
+describe("readFxSnapshot / writeFxSnapshot with no Redis configured", () => {
+  it("read serves the degraded seed immediately", async () => {
+    const snapshot = await readFxSnapshot(null, new Date("2026-08-25T12:00:00.000Z"));
+    expect(snapshot.provider).toBe("seed");
+    expect(snapshot.degraded).toBe(true);
+  });
+
+  it("write throws so the cron route reports the failure", async () => {
+    await expect(writeFxSnapshot(rawFrankfurter, null)).rejects.toThrow(/not configured/);
   });
 });
