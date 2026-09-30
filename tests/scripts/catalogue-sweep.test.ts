@@ -110,3 +110,23 @@ describe("full-catalogue sweep (T-34)", () => {
     expect(failures).toEqual([]);
   }, 180_000);
 });
+
+// The catalogue may never produce an unreachable margin target, so force one to keep the
+// fallback-price branch of the sweep body pinned.
+describe("sweep fallback-price path", () => {
+  it("calculates cleanly at the fallback price when suggestPrice finds no target", () => {
+    const item = catalogue.items[0];
+    if (!item) throw new Error("catalogue has no items");
+    const fxInput = fxInputFor(fx, "UK");
+    const base: SimulationInput = {
+      ...buildMarketInput(item, "UK", "amazon", "1.00", rules),
+      referralFeePct: "95",
+      adSpendLocal: "100000.00",
+    };
+    const suggested = suggestPrice(withoutPrice(base), fxInput, rules, TARGET_MARGIN_PCT);
+    expect(suggested).toBeNull();
+    const price = (item.usd * Number(fxInput.rate) * FALLBACK_PRICE_MULTIPLE).toFixed(2);
+    const result = calculate({ ...base, sellingPriceLocal: price }, fxInput, rules);
+    expect(BAD_VALUE.test(JSON.stringify(result))).toBe(false);
+  });
+});

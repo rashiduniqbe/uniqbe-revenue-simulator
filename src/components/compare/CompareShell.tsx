@@ -9,6 +9,7 @@ import { DisclaimerBar } from "../simulator/DisclaimerBar";
 import { ProductPicker } from "../simulator/ProductPicker";
 import { VerdictCard } from "../simulator/VerdictCard";
 import { BreakdownTable } from "../simulator/BreakdownTable";
+import { WarningList } from "../simulator/WarningList";
 import { ThresholdBanner } from "../simulator/ThresholdBanner";
 
 interface CompareShellProps {
@@ -31,12 +32,16 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
   const [params, setParams] = useQueryStates(compareParsers);
   const item = catalogue.items.find((i) => i.code === params.p) ?? null;
 
+  const backParams = new URLSearchParams({ pl: params.pl });
+  if (params.p) backParams.set("p", params.p);
+  const backHref = `/?${backParams.toString()}`;
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
       <header className="border-b border-neutral-200 bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">Compare UK vs Australia</h1>
-          <a href={`/?p=${encodeURIComponent(params.p)}`} className="text-sm underline">
+          <a href={backHref} className="text-sm underline">
             Back to simulator
           </a>
         </div>
@@ -85,6 +90,13 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
                           thresholdLocal={rules.AU.deMinimisLocal}
                         />
                       )}
+                      <WarningList
+                        warnings={
+                          result.auAboveThreshold === false
+                            ? result.warnings.filter((w) => w.code !== "AU_BELOW_THRESHOLD")
+                            : result.warnings
+                        }
+                      />
                       <VerdictCard
                         verdict={result.verdict}
                         netProfit={result.netProfit}

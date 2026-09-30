@@ -127,3 +127,20 @@ describe("readFxSnapshot / writeFxSnapshot with no Redis configured", () => {
     await expect(writeFxSnapshot(rawFrankfurter, null)).rejects.toThrow(/not configured/);
   });
 });
+
+describe("readFxSnapshot bounded read (F4)", () => {
+  it("resolves to the seed when Redis get never resolves", async () => {
+    const redis = { get: vi.fn(() => new Promise<unknown>(() => {})), set: vi.fn() };
+    const snapshot = await readFxSnapshot(redis, new Date("2026-08-25T12:00:00.000Z"), 20);
+    expect(snapshot.provider).toBe("seed");
+    expect(snapshot.degraded).toBe(true);
+  });
+});
+
+describe("redisFromEnv malformed config (F6)", () => {
+  it("returns null instead of throwing on a non-https URL", () => {
+    expect(
+      redisFromEnv({ UPSTASH_REDIS_REST_URL: "redis://bad", UPSTASH_REDIS_REST_TOKEN: "t" }),
+    ).toBeNull();
+  });
+});

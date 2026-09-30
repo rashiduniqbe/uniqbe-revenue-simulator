@@ -5,6 +5,11 @@ import { FxRawSnapshot, type FxRawSnapshotType, type FxSnapshotType } from "../l
 const FX_REDIS_KEY = "fx:snapshot";
 const DEGRADED_AGE_DAYS_THRESHOLD = 3;
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+// Upper bound on a Redis read before falling back to the seed, so an
+// unreachable or blackholed host never stalls a page render.
+const FX_READ_TIMEOUT_MS = 1500;
+const REDIS_RETRY_COUNT = 1;
+const REDIS_RETRY_BACKOFF_MS = 100;
 
 type RedisLike = {
   get: (key: string) => Promise<unknown>;
@@ -20,7 +25,16 @@ export function redisFromEnv(
   const url = env.UPSTASH_REDIS_REST_URL || env.KV_REST_API_URL;
   const token = env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
-  return new Redis({ url, token });
+  try {
+    return new Redis({
+      url,
+      token,
+      retry: { retries: REDIS_RETRY_COUNT, backoff: () => REDIS_RETRY_BACKOFF_MS },
+    });
+  } catch {
+    // A malformed URL makes the client constructor throw; treat it as "not configured".
+    return null;
+  }
 }
 
 export function computeAgeDays(asOf: string, now: Date = new Date()): number {
@@ -42,16 +56,23 @@ function seedSnapshot(now: Date): FxSnapshotType {
 export async function readFxSnapshot(
   redis: RedisLike | null = redisFromEnv(),
   now: Date = new Date(),
+  timeoutMs: number = FX_READ_TIMEOUT_MS,
 ): Promise<FxSnapshotType> {
   if (redis === null) return seedSnapshot(now);
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    const stored = await redis.get(FX_REDIS_KEY);
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Redis read timed out")), timeoutMs);
+    });
+    const stored = await Promise.race([redis.get(FX_REDIS_KEY), timeout]);
     if (stored === null || stored === undefined) {
       return seedSnapshot(now);
     }
     return toFxSnapshot(FxRawSnapshot.parse(stored), now);
   } catch {
     return seedSnapshot(now);
+  } finally {
+    clearTimeout(timer);
   }
 }
 

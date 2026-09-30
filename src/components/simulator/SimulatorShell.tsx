@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { DEFAULT_SCENARIO, useScenario } from "../../lib/url-state";
-import { isValidDecimalString } from "../../lib/decimal-validation";
+import { resolveSimulationInput } from "../../lib/simulate-input";
 import { calculate } from "../../engine";
 import type { Market } from "../../engine/types";
 import { fxInputFor } from "../../lib/compare";
@@ -82,27 +82,28 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   }
 
   const fxInput = fxInputFor(fx, market);
-  const sellingPriceValid = Number(scenario.sellingPriceLocal) > 0;
-  // Every one of these fields is fed straight into `new Decimal(...)` inside
-  // calculate() with no validation of its own — an empty, blank, or
-  // malformed value (e.g. from clearing an input, or a deep link missing a
-  // param) would throw and crash the page. Gate the call so `result` simply
-  // stays null (same as the "no price entered" state) until all of them
-  // parse cleanly.
-  const numericFieldsValid =
-    isValidDecimalString(scenario.inboundShippingLocal) &&
-    isValidDecimalString(scenario.packagingLocal) &&
-    isValidDecimalString(scenario.adSpendLocal) &&
-    isValidDecimalString(scenario.dutyPct) &&
-    isValidDecimalString(scenario.referralFeePct);
-  const result =
-    selectedItem && sellingPriceValid && numericFieldsValid
-      ? calculate(
-          { ...scenario, usd: selectedItem.usd, category: selectedItem.category },
-          fxInput,
+  // calculate() feeds these strings straight into `new Decimal(...)`, so an
+  // empty, padded or malformed value would throw. resolveSimulationInput trims,
+  // fills empty duty/referral from market defaults, and returns null (no
+  // result yet) unless everything parses.
+  const resolved = selectedItem ? resolveSimulationInput(scenario, selectedItem, rules) : null;
+  // The suggester validates the same fields but never trims them, so hand it the
+  // resolved (trimmed, defaulted) values; the price is irrelevant to it.
+  const suggestionInput = selectedItem
+    ? {
+        ...(resolveSimulationInput(
+          { ...scenario, sellingPriceLocal: "1" },
+          selectedItem,
           rules,
-        )
-      : null;
+        ) ?? {
+          ...scenario,
+          usd: selectedItem.usd,
+          category: selectedItem.category,
+        }),
+        sellingPriceLocal: scenario.sellingPriceLocal,
+      }
+    : null;
+  const result = resolved ? calculate(resolved, fxInput, rules) : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
@@ -135,9 +136,9 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             rules={rules}
             category={selectedItem?.category ?? null}
           />
-          {selectedItem && (
+          {selectedItem && suggestionInput && (
             <PriceSuggestion
-              input={{ ...scenario, usd: selectedItem.usd, category: selectedItem.category }}
+              input={suggestionInput}
               fx={fxInput}
               rules={rules}
               disabled={!selectedItem}
