@@ -73,6 +73,6 @@ describe("adaptability drill (T-35)", () => {
     expect(diff.added.map((i) => i.code).sort()).toEqual(["DR00001", "DR00002", "DR00003"]);
     expect(diff.removed.map((i) => i.code).sort()).toEqual([...removed].sort());
     expect(diff.repriced.map((r) => r.code).sort()).toEqual([...repriced].sort());
-    for (const r of diff.repriced) expect(r.newUsd - r.oldUsd).toBeCloseTo(REPRICE_DELTA_USD, 2);
+    for (const r of diff.repriced) expect(r.newUsd - r.oldUsd).toBe(REPRICE_DELTA_USD);
   }, 60_000);
 });
