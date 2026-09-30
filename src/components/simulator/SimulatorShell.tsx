@@ -5,7 +5,8 @@ import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/s
 import { DEFAULT_SCENARIO, useScenario } from "../../lib/url-state";
 import { isValidDecimalString } from "../../lib/decimal-validation";
 import { calculate } from "../../engine";
-import type { FxInput, Market } from "../../engine/types";
+import type { Market } from "../../engine/types";
+import { fxInputFor } from "../../lib/compare";
 import { deriveDutyPctDefault, deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
@@ -80,7 +81,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     });
   }
 
-  const fxInput: FxInput = { rate: String(rate), asOf: fx.asOf, degraded: fx.degraded };
+  const fxInput = fxInputFor(fx, market);
   const sellingPriceValid = Number(scenario.sellingPriceLocal) > 0;
   // Every one of these fields is fed straight into `new Decimal(...)` inside
   // calculate() with no validation of its own — an empty, blank, or
@@ -120,6 +121,14 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             selectedCode={scenario.productCode}
             onSelect={selectProduct}
           />
+          {selectedItem && (
+            <a
+              href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
+              className="text-sm underline"
+            >
+              Compare UK vs Australia
+            </a>
+          )}
           <InputPanel
             scenario={scenario}
             onChange={setScenario}
