@@ -15,6 +15,7 @@ function baseCtx(overrides: Partial<EngineContext>): EngineContext {
     platform: "amazon",
     adSpend: new Money("0.00"),
     shopifyHasAbn: false,
+    deMinimis: { deMinimisLocal: 1000, deMinimisComparand: "goods" },
     ...overrides,
   };
 }
@@ -80,5 +81,32 @@ describe("emitWarnings", () => {
       baseCtx({ market: "AU", platform: "shopify", shopifyHasAbn: true }),
     ).map((w) => w.code);
     expect(withAbn).not.toContain("SHOPIFY_AU_GST_ON_SUB");
+  });
+});
+
+describe("AU near-threshold band reads the configured rule", () => {
+  it("band follows deMinimisLocal: goods 480 is near a 500 threshold", () => {
+    const codes = emitWarnings(
+      baseCtx({
+        market: "AU",
+        above: false,
+        goods: new Money("480.00"),
+        deMinimis: { deMinimisLocal: 500, deMinimisComparand: "goods" },
+      }),
+    ).map((w) => w.code);
+    expect(codes).toContain("AU_NEAR_THRESHOLD");
+  });
+
+  it("band uses the comparand: goods 900 + freight 60 is near under goods+freight", () => {
+    const codes = emitWarnings(
+      baseCtx({
+        market: "AU",
+        above: false,
+        goods: new Money("900.00"),
+        shipping: new Money("60.00"),
+        deMinimis: { deMinimisLocal: 1000, deMinimisComparand: "goods+freight" },
+      }),
+    ).map((w) => w.code);
+    expect(codes).toContain("AU_NEAR_THRESHOLD");
   });
 });

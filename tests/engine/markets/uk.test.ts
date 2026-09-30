@@ -4,8 +4,13 @@ import { ukModule } from "../../../src/engine/markets/uk";
 
 describe("ukModule", () => {
   it("is always above threshold regardless of goods/freight", () => {
-    expect(ukModule.isAboveThreshold(new Money(0), new Money(0))).toBe(true);
-    expect(ukModule.isAboveThreshold(new Money(999999), new Money(0))).toBe(true);
+    // UK has no de-minimis rule (market-rules.json: UK.deMinimisLocal is null); UK's
+    // isAboveThreshold ignores the rule argument entirely, so { deMinimisLocal: null }
+    // (UK's real config shape) is passed to satisfy the MarketModule interface's
+    // now-required third parameter (AGENTS.md 5a / registry.ts DeMinimisRule).
+    const UK_RULE = { deMinimisLocal: null };
+    expect(ukModule.isAboveThreshold(new Money(0), new Money(0), UK_RULE)).toBe(true);
+    expect(ukModule.isAboveThreshold(new Money(999999), new Money(0), UK_RULE)).toBe(true);
   });
 
   it("computes duty as goods x dutyPct/100 (GF-01/02/03: 0% on mobile-phone)", () => {

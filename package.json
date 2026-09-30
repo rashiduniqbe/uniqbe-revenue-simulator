@@ -17,18 +17,26 @@
     "verify": "pnpm run typecheck && pnpm run lint && pnpm run test",
     "catalogue:build": "tsx scripts/build-catalogue.ts",
     "catalogue:check": "tsx scripts/build-catalogue.ts --verify",
-    "catalogue:diff": "tsx scripts/catalogue-diff.ts"
+    "catalogue:diff": "tsx scripts/catalogue-diff.ts",
+    "fx:seed": "tsx scripts/seed-fx.ts",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium"
   },
   "dependencies": {
+    "@upstash/redis": "^1.38.4",
     "decimal.js": "^10.6.0",
     "exceljs": "^4.4.0",
+    "fuse.js": "^7.5.0",
     "next": "^15.5.25",
+    "nuqs": "^2.10.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.20.2",
     "@types/react": "^19.3.0",

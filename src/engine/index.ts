@@ -38,7 +38,7 @@ export function calculate(
   const dutyPct = new Decimal(input.dutyPct);
   const duty = market.computeDuty(goods, dutyPct);
 
-  const above = market.isAboveThreshold(goods, shipping);
+  const above = market.isAboveThreshold(goods, shipping, marketRules);
   const importTax = market.computeImportTax(goods, shipping, duty, above);
 
   const landed = input.taxRegistered
@@ -137,6 +137,7 @@ export function calculate(
     platform: input.platform,
     adSpend: r2(input.adSpendLocal),
     shopifyHasAbn: input.shopifyHasAbn,
+    deMinimis: marketRules,
   });
   if (fx.degraded) {
     warnings.push({ code: "FX_DEGRADED" });
@@ -187,7 +188,7 @@ export function suggestPrice(
   const shipping = r2(input.inboundShippingLocal);
   const dutyPct = new Decimal(input.dutyPct);
   const duty = market.computeDuty(goods, dutyPct);
-  const above = market.isAboveThreshold(goods, shipping);
+  const above = market.isAboveThreshold(goods, shipping, marketRules);
   const importTax = market.computeImportTax(goods, shipping, duty, above);
   const landed = input.taxRegistered
     ? goods.plus(shipping).plus(duty)

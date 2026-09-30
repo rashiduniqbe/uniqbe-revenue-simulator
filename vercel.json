@@ -1,0 +1,3 @@
+{
+  "crons": [{ "path": "/api/cron/fx-refresh", "schedule": "0 6 * * *" }]
+}

@@ -1,8 +1,11 @@
 import Decimal from "decimal.js";
+import { comparand } from "./markets/au";
 import type { EngineContext } from "./markets/registry";
 import type { EngineWarning } from "./types";
 
-const AU_DE_MINIMIS = new Decimal(1000);
+// Width of the "near the line" warning band, as a % of the configured
+// threshold. A UI nudge, not a tax rule, so it lives here rather than in
+// market-rules.json.
 const AU_NEAR_THRESHOLD_BAND_PCT = 5;
 
 export function emitWarnings(ctx: EngineContext): EngineWarning[] {
@@ -10,9 +13,13 @@ export function emitWarnings(ctx: EngineContext): EngineWarning[] {
 
   if (ctx.market === "AU" && ctx.above === false) {
     warnings.push({ code: "AU_BELOW_THRESHOLD" });
-    const band = AU_DE_MINIMIS.times(AU_NEAR_THRESHOLD_BAND_PCT).div(100);
-    if (ctx.goods.gte(AU_DE_MINIMIS.minus(band))) {
-      warnings.push({ code: "AU_NEAR_THRESHOLD" });
+    const { deMinimisLocal, deMinimisComparand } = ctx.deMinimis;
+    if (deMinimisLocal !== null && deMinimisComparand !== undefined) {
+      const threshold = new Decimal(deMinimisLocal);
+      const band = threshold.times(AU_NEAR_THRESHOLD_BAND_PCT).div(100);
+      if (comparand(deMinimisComparand, ctx.goods, ctx.shipping).gte(threshold.minus(band))) {
+        warnings.push({ code: "AU_NEAR_THRESHOLD" });
+      }
     }
   }
 

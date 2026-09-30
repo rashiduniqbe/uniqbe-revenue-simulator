@@ -3,7 +3,16 @@ import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
-  { ignores: ["node_modules/**", ".next/**", "src/data/catalogue.json", "next-env.d.ts"] },
+  {
+    ignores: [
+      "node_modules/**",
+      ".next/**",
+      "src/data/catalogue.json",
+      "next-env.d.ts",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
