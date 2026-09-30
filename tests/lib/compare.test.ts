@@ -51,7 +51,12 @@ describe("compareMarket", () => {
     expect(typeof au?.auAboveThreshold).toBe("boolean");
   });
 
-  it.each(["", "0", "-5", "abc", "1,000"])("returns null for price %j", (price) => {
+  it("trims a whitespace-padded price instead of throwing", () => {
+    const uk = compareMarket(item, "UK", "amazon", " 500.00 ", rules, fx);
+    expect(uk?.currency).toBe("GBP");
+  });
+
+  it.each(["", "   ", "0", "-5", "abc", "1,000"])("returns null for price %j", (price) => {
     expect(compareMarket(item, "UK", "amazon", price, rules, fx)).toBeNull();
   });
 });

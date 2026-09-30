@@ -52,9 +52,10 @@ export function compareMarket(
   rules: MarketRulesType,
   fx: FxSnapshotType,
 ): SimulationResult | null {
-  if (!isValidDecimalString(sellingPriceLocal) || !(Number(sellingPriceLocal) > 0)) return null;
+  const price = sellingPriceLocal.trim();
+  if (!isValidDecimalString(price) || !(Number(price) > 0)) return null;
   return calculate(
-    buildMarketInput(item, market, platform, sellingPriceLocal, rules),
+    buildMarketInput(item, market, platform, price, rules),
     fxInputFor(fx, market),
     rules,
   );
