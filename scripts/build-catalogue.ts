@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import { readdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import ExcelJS from "exceljs";
 import { Catalogue, type CategorySlugType, type CatalogueItemType } from "../src/lib/schemas";
 
@@ -14,7 +15,9 @@ export type RawRow = {
   hkd: number;
 };
 
-const CATEGORY_MAP: Record<string, { slug: CategorySlugType; label: string }> = {
+export type CategoryMap = Record<string, { slug: CategorySlugType; label: string }>;
+
+export const CATEGORY_MAP: CategoryMap = {
   "mobile phone": { slug: "mobile-phone", label: "Mobile Phone" },
   earphones: { slug: "audio", label: "Audio" },
   "smart wearables": { slug: "wearable", label: "Smart Wearables" },
@@ -29,9 +32,12 @@ const CATEGORY_MAP: Record<string, { slug: CategorySlugType; label: string }> = 
   "vacuumn cleaners": { slug: "home-appliance", label: "Home Appliances" },
 };
 
-export function mapCategory(raw: string): { slug: CategorySlugType; label: string } {
+export function mapCategory(
+  raw: string,
+  categoryMap: CategoryMap = CATEGORY_MAP,
+): { slug: CategorySlugType; label: string } {
   const key = raw.trim().toLowerCase();
-  const mapped = CATEGORY_MAP[key];
+  const mapped = categoryMap[key];
   if (!mapped) {
     throw new Error(
       `Unmapped category "${raw}".\n` +
@@ -67,7 +73,7 @@ export function parsePriceListDate(sourceFile: string): string {
   return `${match[1]}-${match[2]}-${match[3]}`;
 }
 
-function normalizeRow(raw: RawRow): CatalogueItemType {
+function normalizeRow(raw: RawRow, categoryMap: CategoryMap = CATEGORY_MAP): CatalogueItemType {
   if (!Number.isInteger(raw.usd) || raw.usd <= 0) {
     throw new Error(`Row ${raw.productCode}: USD must be a positive integer, got ${raw.usd}`);
   }
@@ -77,7 +83,7 @@ function normalizeRow(raw: RawRow): CatalogueItemType {
       `WARN: ${raw.productCode} has HKD/USD ratio ${ratio.toFixed(3)}, outside the expected 7.70-7.90 peg band.`,
     );
   }
-  const { slug, label } = mapCategory(raw.categoryRaw);
+  const { slug, label } = mapCategory(raw.categoryRaw, categoryMap);
   return {
     code: raw.productCode,
     brand: raw.brand,
@@ -92,14 +98,18 @@ function normalizeRow(raw: RawRow): CatalogueItemType {
   };
 }
 
-export function buildCatalogue(rows: RawRow[], sourceFile: string) {
+export function buildCatalogue(
+  rows: RawRow[],
+  sourceFile: string,
+  categoryMap: CategoryMap = CATEGORY_MAP,
+) {
   const codes = new Set<string>();
   const items = rows.map((raw) => {
     if (codes.has(raw.productCode)) {
       throw new Error(`Duplicate ProductCode "${raw.productCode}" found in ${sourceFile}.`);
     }
     codes.add(raw.productCode);
-    return normalizeRow(raw);
+    return normalizeRow(raw, categoryMap);
   });
   return Catalogue.parse({
     schemaVersion: 1,
@@ -117,7 +127,7 @@ export function buildCatalogue(rows: RawRow[], sourceFile: string) {
 
 const EXPECTED_HEADERS = ["productcode", "brand", "product name", "category", "usd", "hkd"];
 
-async function readWorkbook(path: string): Promise<{ rows: RawRow[]; sourceFile: string }> {
+export async function readWorkbook(path: string): Promise<{ rows: RawRow[]; sourceFile: string }> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(path);
   const sheet = workbook.getWorksheet("Pricelist");
@@ -200,7 +210,9 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
+}
