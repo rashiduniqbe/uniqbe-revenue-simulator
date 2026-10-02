@@ -121,6 +121,8 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   const result = resolved ? calculate(resolved, fxInput, rules) : null;
   useSettledTrack(
     result ? calculationRun(result, market, scenario.platform) : null,
+    // Local-only de-dupe key: the full resolved scenario (price included).
+    resolved ? JSON.stringify(resolved) : null,
     CALCULATION_SETTLE_MS,
   );
 

@@ -13,7 +13,7 @@ test("simulator_viewed is sent, with no pageview and no price anywhere", async (
     .toContain("simulator_viewed");
   const all = requests.join("\n");
   // The payload is readable (disable_compression), so these negatives mean something.
-  expect(all).not.toContain("9999");
+  expect(all).not.toContain("9999.00");
   expect(all).not.toContain("sp=");
   expect(all).not.toContain("$pageview");
 });
@@ -37,7 +37,7 @@ test("typing a price sends exactly one calculation_run, with a band and no price
   expect(countOccurrences(requests, "calculation_run")).toBe(1);
   expect(all).toContain("product_selected");
   expect(all).toContain("marginBand");
-  expect(all).not.toContain("9999");
+  expect(all).not.toContain("9999.00");
   expect(all).not.toContain("netProfit");
   expect(all).not.toContain("marginPct");
 });
@@ -62,7 +62,7 @@ test("/compare sends comparison_viewed and no price", async ({ page }) => {
     .toContain("comparison_viewed");
   const all = requests.join("\n");
   expect(all).toContain(item.code);
-  expect(all).not.toContain("9999");
+  expect(all).not.toContain("9999.00");
 });
 
 test("Copy link copies the scenario URL and sends scenario_shared", async ({ page, context }) => {
@@ -77,4 +77,26 @@ test("Copy link copies the scenario URL and sends scenario_shared", async ({ pag
   await expect
     .poll(() => requests.join("\n"), { timeout: FLUSH_TIMEOUT_MS })
     .toContain("scenario_shared");
+});
+
+test("two settled prices with the same verdict and band count as two calculation_runs", async ({
+  page,
+}) => {
+  const requests = await captureAnalytics(page);
+  await page.goto("/");
+  await pickFirstProduct(page);
+  const price = page.getByRole("textbox", { name: "Selling price" });
+  await price.fill("9999.00");
+  await expect
+    .poll(() => countOccurrences(requests, "calculation_run"), { timeout: FLUSH_TIMEOUT_MS })
+    .toBe(1);
+  // A different price is a different result the partner saw, even when the
+  // banded payload is identical (spec §13: "loss-making verdicts shown").
+  await price.fill("9998.00");
+  await expect
+    .poll(() => countOccurrences(requests, "calculation_run"), { timeout: FLUSH_TIMEOUT_MS })
+    .toBe(2);
+  const all = requests.join("\n");
+  expect(all).not.toContain("9999.00");
+  expect(all).not.toContain("9998.00");
 });

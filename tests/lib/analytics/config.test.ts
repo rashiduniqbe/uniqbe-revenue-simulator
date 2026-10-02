@@ -45,3 +45,27 @@ describe("POSTHOG_PRIVACY_OPTIONS (spec §13 + approved cookieless decision)", (
     expect(POSTHOG_PRIVACY_OPTIONS.before_send).toBe(scrubCapture);
   });
 });
+
+describe("POSTHOG_PRIVACY_OPTIONS is pinned in full (final review)", () => {
+  it("has exactly these options — adding or dropping one is a privacy decision", () => {
+    const { before_send, ...rest } = POSTHOG_PRIVACY_OPTIONS;
+    expect(before_send).toBe(scrubCapture);
+    expect(rest).toEqual({
+      person_profiles: "identified_only",
+      persistence: "memory",
+      autocapture: false,
+      capture_pageview: false,
+      capture_pageleave: false,
+      capture_dead_clicks: false,
+      capture_heatmaps: false,
+      capture_exceptions: false,
+      capture_performance: false,
+      rageclick: false,
+      disable_session_recording: true,
+      disable_surveys: true,
+      advanced_disable_flags: true,
+      save_referrer: false,
+      disable_compression: true,
+    });
+  });
+});

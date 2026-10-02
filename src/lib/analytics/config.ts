@@ -32,9 +32,12 @@ export const POSTHOG_PRIVACY_OPTIONS = {
   capture_dead_clicks: false,
   capture_heatmaps: false,
   capture_exceptions: false,
+  capture_performance: false,
   rageclick: false,
   disable_session_recording: true,
   disable_surveys: true,
+  // Privacy-load-bearing: also disables remote config, which could otherwise
+  // switch on autocapture features (e.g. web vitals) from the PostHog project.
   advanced_disable_flags: true,
   save_referrer: false,
   disable_compression: true,

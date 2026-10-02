@@ -39,3 +39,24 @@ describe("scrubCapture", () => {
     expect(scrubCapture(null)).toBeNull();
   });
 });
+
+describe("scrubCapture on nested properties (final review: web vitals)", () => {
+  it("strips URLs nested in objects and arrays", () => {
+    const scrubbed = scrubCapture({
+      event: "$web_vitals",
+      properties: {
+        $web_vitals_LCP_event: {
+          $current_url: "https://sim.uniqbe.com/?sp=599.99",
+          navigationURL: "https://sim.uniqbe.com/compare?sp_uk=599.99",
+          value: 1234.5,
+        },
+        urls: ["https://sim.uniqbe.com/?sp=599.99", "UK"],
+      },
+    });
+    const json = JSON.stringify(scrubbed);
+    expect(json).not.toContain("599.99");
+    expect(json).not.toContain("sp=");
+    expect(json).toContain("1234.5");
+    expect(json).toContain('"UK"');
+  });
+});

@@ -18,13 +18,19 @@ export function stripUrl(value: string): string {
   }
 }
 
+// Recurses into plain objects and arrays: some PostHog events (e.g. $web_vitals)
+// nest URL-valued properties inside objects.
+function scrubValue(value: unknown): unknown {
+  if (typeof value === "string") return stripUrl(value);
+  if (Array.isArray(value)) return value.map(scrubValue);
+  if (value !== null && typeof value === "object" && !(value instanceof Date)) {
+    return scrubRecord(value as Record<string, unknown>);
+  }
+  return value;
+}
+
 function scrubRecord(record: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(record).map(([key, value]) => [
-      key,
-      typeof value === "string" ? stripUrl(value) : value,
-    ]),
-  );
+  return Object.fromEntries(Object.entries(record).map(([key, value]) => [key, scrubValue(value)]));
 }
 
 export function scrubCapture<T extends CaptureLike>(cr: T | null): T | null {
