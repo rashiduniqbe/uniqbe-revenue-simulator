@@ -19,6 +19,7 @@ import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
 import { ThresholdBanner } from "./ThresholdBanner";
+import { CopyLinkButton } from "./CopyLinkButton";
 import { track } from "../../lib/analytics/client";
 import {
   calculationRun,
@@ -141,12 +142,15 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             onSelect={selectProduct}
           />
           {selectedItem && (
-            <a
-              href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
-              className="text-sm underline"
-            >
-              Compare UK vs Australia
-            </a>
+            <div className="flex flex-col gap-1">
+              <a
+                href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
+                className="text-sm underline"
+              >
+                Compare UK vs Australia
+              </a>
+              <CopyLinkButton />
+            </div>
           )}
           <InputPanel
             scenario={scenario}

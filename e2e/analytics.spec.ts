@@ -64,3 +64,17 @@ test("/compare sends comparison_viewed and no price", async ({ page }) => {
   expect(all).toContain(item.code);
   expect(all).not.toContain("9999");
 });
+
+test("Copy link copies the scenario URL and sends scenario_shared", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  const requests = await captureAnalytics(page);
+  await page.goto("/");
+  const item = await pickFirstProduct(page);
+  await page.getByRole("button", { name: "Copy link" }).click();
+  await expect(page.getByText("Link copied")).toBeVisible();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain(`p=${item.code}`);
+  await expect
+    .poll(() => requests.join("\n"), { timeout: FLUSH_TIMEOUT_MS })
+    .toContain("scenario_shared");
+});
