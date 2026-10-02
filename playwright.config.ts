@@ -19,5 +19,11 @@ export default defineConfig({
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 240_000,
+    // A placeholder key turns analytics on in the E2E build. Nothing listens on
+    // this host: analytics.spec.ts intercepts it; other specs' requests just fail.
+    env: {
+      NEXT_PUBLIC_POSTHOG_KEY: "phc_e2e_placeholder",
+      NEXT_PUBLIC_POSTHOG_HOST: "http://127.0.0.1:3999",
+    },
   },
 });

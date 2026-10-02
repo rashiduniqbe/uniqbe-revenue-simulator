@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { DEFAULT_SCENARIO, useScenario } from "../../lib/url-state";
 import { resolveSimulationInput } from "../../lib/simulate-input";
@@ -19,6 +19,8 @@ import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
 import { ThresholdBanner } from "./ThresholdBanner";
+import { track } from "../../lib/analytics/client";
+import { referrerSource, simulatorViewed } from "../../lib/analytics/events";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -34,6 +36,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   const rate = market === "UK" ? fx.rates.GBP : fx.rates.AUD;
 
   const selectedItem = catalogue.items.find((item) => item.code === scenario.productCode) ?? null;
+
+  // Once per page load, with the market the URL opened with.
+  useEffect(() => {
+    track(simulatorViewed(market, referrerSource(document.referrer, window.location.host)));
+  }, []);
 
   function selectProduct(code: string) {
     const item = catalogue.items.find((i) => i.code === code);
