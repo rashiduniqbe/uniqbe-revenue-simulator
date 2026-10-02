@@ -20,7 +20,13 @@ import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
 import { ThresholdBanner } from "./ThresholdBanner";
 import { track } from "../../lib/analytics/client";
-import { referrerSource, simulatorViewed } from "../../lib/analytics/events";
+import {
+  calculationRun,
+  productSelected,
+  referrerSource,
+  simulatorViewed,
+} from "../../lib/analytics/events";
+import { CALCULATION_SETTLE_MS, useSettledTrack } from "../analytics/useSettledTrack";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -51,6 +57,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       dutyPct: deriveDutyPctDefault(rules, market, item.category),
       referralFeePct: deriveReferralFeeDefault(rules, market, scenario.platform, item.category),
     });
+    track(productSelected(item.code, item.category, market));
   }
 
   function selectMarket(nextMarket: Market) {
@@ -111,6 +118,10 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       }
     : null;
   const result = resolved ? calculate(resolved, fxInput, rules) : null;
+  useSettledTrack(
+    result ? calculationRun(result, market, scenario.platform) : null,
+    CALCULATION_SETTLE_MS,
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">

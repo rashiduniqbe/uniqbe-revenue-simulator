@@ -5,6 +5,8 @@ import { suggestPrice } from "../../engine";
 import type { SimulationInput, FxInput } from "../../engine/types";
 import type { MarketRulesType } from "../../lib/schemas";
 import { isValidDecimalString } from "../../lib/decimal-validation";
+import { track } from "../../lib/analytics/client";
+import { priceSuggested } from "../../lib/analytics/events";
 
 type SuggestionInput = Omit<SimulationInput, "sellingPriceLocal">;
 
@@ -48,9 +50,11 @@ export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSu
 
   function handleSuggest() {
     if (!isSuggestionInputValid(input)) return;
-    setResult(suggestPrice(input, fx, rules, targetMarginPct));
+    const suggestion = suggestPrice(input, fx, rules, targetMarginPct);
+    setResult(suggestion);
     setHasSuggested(true);
     suggestedForInputRef.current = input;
+    track(priceSuggested(targetMarginPct, suggestion !== null));
   }
 
   return (
