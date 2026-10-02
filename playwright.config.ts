@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: target.baseURL,
     extraHTTPHeaders: target.extraHTTPHeaders,
-    trace: "retain-on-failure",
+    trace: target.trace,
   },
   projects: [
     { name: "desktop-chromium", use: { ...devices["Desktop Chrome"] } },
