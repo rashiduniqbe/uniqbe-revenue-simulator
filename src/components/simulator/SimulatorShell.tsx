@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CatalogueType, MarketRulesType, FxSnapshotType } from "../../lib/schemas";
 import { DEFAULT_SCENARIO, useScenario } from "../../lib/url-state";
 import { resolveSimulationInput } from "../../lib/simulate-input";
@@ -19,6 +19,15 @@ import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
 import { ThresholdBanner } from "./ThresholdBanner";
+import { CopyLinkButton } from "./CopyLinkButton";
+import { track } from "../../lib/analytics/client";
+import {
+  calculationRun,
+  productSelected,
+  referrerSource,
+  simulatorViewed,
+} from "../../lib/analytics/events";
+import { CALCULATION_SETTLE_MS, useSettledTrack } from "../analytics/useSettledTrack";
 
 interface SimulatorShellProps {
   catalogue: CatalogueType;
@@ -35,6 +44,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
   const selectedItem = catalogue.items.find((item) => item.code === scenario.productCode) ?? null;
 
+  // Once per page load, with the market the URL opened with.
+  useEffect(() => {
+    track(simulatorViewed(market, referrerSource(document.referrer, window.location.host)));
+  }, []);
+
   function selectProduct(code: string) {
     const item = catalogue.items.find((i) => i.code === code);
     if (!item) return;
@@ -44,6 +58,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       dutyPct: deriveDutyPctDefault(rules, market, item.category),
       referralFeePct: deriveReferralFeeDefault(rules, market, scenario.platform, item.category),
     });
+    track(productSelected(item.code, item.category, market));
   }
 
   function selectMarket(nextMarket: Market) {
@@ -104,6 +119,12 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       }
     : null;
   const result = resolved ? calculate(resolved, fxInput, rules) : null;
+  useSettledTrack(
+    result ? calculationRun(result, market, scenario.platform) : null,
+    // Local-only de-dupe key: the full resolved scenario (price included).
+    resolved ? JSON.stringify(resolved) : null,
+    CALCULATION_SETTLE_MS,
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
@@ -123,12 +144,15 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             onSelect={selectProduct}
           />
           {selectedItem && (
-            <a
-              href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
-              className="text-sm underline"
-            >
-              Compare UK vs Australia
-            </a>
+            <div className="flex flex-col gap-1">
+              <a
+                href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
+                className="text-sm underline"
+              >
+                Compare UK vs Australia
+              </a>
+              <CopyLinkButton />
+            </div>
           )}
           <InputPanel
             scenario={scenario}

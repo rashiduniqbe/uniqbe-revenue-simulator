@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQueryStates } from "nuqs";
 import type { CatalogueType, FxSnapshotType, MarketRulesType } from "../../lib/schemas";
 import type { Market } from "../../engine/types";
@@ -11,6 +12,8 @@ import { VerdictCard } from "../simulator/VerdictCard";
 import { BreakdownTable } from "../simulator/BreakdownTable";
 import { WarningList } from "../simulator/WarningList";
 import { ThresholdBanner } from "../simulator/ThresholdBanner";
+import { track } from "../../lib/analytics/client";
+import { comparisonViewed } from "../../lib/analytics/events";
 
 interface CompareShellProps {
   catalogue: CatalogueType;
@@ -31,6 +34,11 @@ const COLUMNS: {
 export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
   const [params, setParams] = useQueryStates(compareParsers);
   const item = catalogue.items.find((i) => i.code === params.p) ?? null;
+  const itemCode = item?.code ?? null;
+  // Once per product compared. An unknown or empty code sends nothing.
+  useEffect(() => {
+    if (itemCode !== null) track(comparisonViewed(itemCode));
+  }, [itemCode]);
 
   const backParams = new URLSearchParams({ pl: params.pl });
   if (params.p) backParams.set("p", params.p);
