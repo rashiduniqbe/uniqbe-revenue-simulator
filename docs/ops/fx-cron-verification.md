@@ -18,6 +18,6 @@ Baseline (not a cron run): 2026-10-04 02:27 UTC, a manual authorised call wrote
 
 | Day | Date (UTC) | fetchedAt | provider | degraded | Cron log status | Pass |
 |---|---|---|---|---|---|---|
-| 1 | | | | | | |
+| 1 | 2026-10-04 | 2026-10-04T06:53:38Z | frankfurter | false | write observed (fetchedAt in window) | ✅ |
 | 2 | | | | | | |
 | 3 | | | | | | |
