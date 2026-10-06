@@ -20,4 +20,4 @@ Baseline (not a cron run): 2026-10-04 02:27 UTC, a manual authorised call wrote
 |---|---|---|---|---|---|---|
 | 1 | 2026-10-04 | 2026-10-04T06:53:38Z | frankfurter | false | write observed (fetchedAt in window) | ✅ |
 | 2 | 2026-10-05 | 2026-10-05T06:53:38Z | frankfurter | false | write observed (fetchedAt in window) | ✅ |
-| 3 | | | | | | |
+| 3 | 2026-10-06 | 2026-10-06T06:53:38Z | frankfurter | false | write observed (fetchedAt in window) | ✅ |
