@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { captureAnalytics, countOccurrences } from "./analytics-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
-import { AGAINST_DEPLOYMENT } from "./target";
+import { isAgainstDeployment } from "./target";
 
 // The privacy harness needs the local E2E build's placeholder key and fake
 // ingest host; a deployment has neither (PostHog is off until a key is set).
-test.skip(AGAINST_DEPLOYMENT, "analytics harness runs only against the local E2E build");
+test.skip(isAgainstDeployment(), "analytics harness runs only against the local E2E build");
 
 const FLUSH_TIMEOUT_MS = 15_000;
 

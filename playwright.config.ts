@@ -11,7 +11,6 @@ export default defineConfig({
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
   use: {
     baseURL: target.baseURL,
-    extraHTTPHeaders: target.extraHTTPHeaders,
     trace: target.trace,
   },
   projects: [

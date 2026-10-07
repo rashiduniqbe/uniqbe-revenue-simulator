@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { expectFxAndDisclaimer, pickFirstProduct } from "./helpers";
-import { AGAINST_DEPLOYMENT } from "./target";
+import { isAgainstDeployment } from "./target";
 
 const VERDICT = /PROFITABLE|MARGINAL|LOSS-MAKING/;
 
@@ -42,7 +42,7 @@ test("URL state: reload restores the scenario and back works", async ({ page }) 
 
 test("no Redis in CI: seed rates render with the degraded warning", async ({ page }) => {
   test.skip(
-    !process.env.CI || AGAINST_DEPLOYMENT,
+    !process.env.CI || isAgainstDeployment(),
     "needs the no-Redis local CI build; locally .env.local or a deployment has real Redis",
   );
   await page.goto("/");
