@@ -1,5 +1,6 @@
 import { expect, test as base } from "@playwright/test";
-import { headersForRequest, resolveE2ETarget } from "./target";
+import { routeWithTargetHeaders } from "./route-headers";
+import { resolveE2ETarget } from "./target";
 
 const target = resolveE2ETarget(process.env);
 
@@ -10,15 +11,7 @@ export const test = base.extend<{ targetHeaders: void }>({
   targetHeaders: [
     async ({ context }, use) => {
       if (!target.startLocalServer) {
-        await context.route("**/*", async (route) => {
-          const request = route.request();
-          const extra = headersForRequest(request.url(), target);
-          if (Object.keys(extra).length === 0) {
-            await route.continue();
-            return;
-          }
-          await route.continue({ headers: { ...request.headers(), ...extra } });
-        });
+        await context.route("**/*", (route) => routeWithTargetHeaders(route, target));
       }
       await use();
     },
