@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { captureAnalytics, countOccurrences } from "./analytics-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
 import { isAgainstDeployment } from "./target";
