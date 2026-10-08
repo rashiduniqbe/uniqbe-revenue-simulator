@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryStates } from "nuqs";
 import type { CatalogueType, FxSnapshotType, MarketRulesType } from "../../lib/schemas";
 import type { Market } from "../../engine/types";
@@ -12,6 +12,7 @@ import { VerdictCard } from "../simulator/VerdictCard";
 import { BreakdownTable } from "../simulator/BreakdownTable";
 import { WarningList } from "../simulator/WarningList";
 import { ThresholdBanner } from "../simulator/ThresholdBanner";
+import { useAdoptTypedValues } from "../simulator/useAdoptTypedValues";
 import { track } from "../../lib/analytics/client";
 import { comparisonViewed } from "../../lib/analytics/events";
 
@@ -39,6 +40,13 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
   useEffect(() => {
     if (itemCode !== null) track(comparisonViewed(itemCode));
   }, [itemCode]);
+  const priceRefs = {
+    sp_uk: useRef<HTMLInputElement>(null),
+    sp_au: useRef<HTMLInputElement>(null),
+  };
+  useAdoptTypedValues(priceRefs, { sp_uk: params.sp_uk, sp_au: params.sp_au }, (typed) =>
+    setParams(typed),
+  );
 
   const backParams = new URLSearchParams({ pl: params.pl });
   if (params.p) backParams.set("p", params.p);
@@ -82,6 +90,7 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
                   </label>
                   <input
                     id={inputId}
+                    ref={priceRefs[col.priceKey]}
                     type="text"
                     inputMode="decimal"
                     className="block rounded border border-neutral-300 px-3 py-2 font-mono text-sm"
