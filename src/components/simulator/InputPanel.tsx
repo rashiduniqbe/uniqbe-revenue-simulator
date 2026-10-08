@@ -1,8 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import type { ScenarioParams } from "../../lib/url-state";
 import type { MarketRulesType, CategorySlugType } from "../../lib/schemas";
 import { deriveReferralFeeDefault } from "../../lib/scenario-defaults";
+import { useAdoptTypedValues } from "./useAdoptTypedValues";
 
 interface InputPanelProps {
   scenario: ScenarioParams;
@@ -13,6 +15,26 @@ interface InputPanelProps {
 
 export function InputPanel({ scenario, onChange, rules, category }: InputPanelProps) {
   const marketRules = rules[scenario.market];
+  const textRefs = {
+    sellingPriceLocal: useRef<HTMLInputElement>(null),
+    inboundShippingLocal: useRef<HTMLInputElement>(null),
+    packagingLocal: useRef<HTMLInputElement>(null),
+    adSpendLocal: useRef<HTMLInputElement>(null),
+    dutyPct: useRef<HTMLInputElement>(null),
+    referralFeePct: useRef<HTMLInputElement>(null),
+  };
+  useAdoptTypedValues(
+    textRefs,
+    {
+      sellingPriceLocal: scenario.sellingPriceLocal,
+      inboundShippingLocal: scenario.inboundShippingLocal,
+      packagingLocal: scenario.packagingLocal,
+      adSpendLocal: scenario.adSpendLocal,
+      dutyPct: scenario.dutyPct,
+      referralFeePct: scenario.referralFeePct,
+    },
+    (typed) => onChange({ ...scenario, ...typed }),
+  );
 
   function set<K extends keyof ScenarioParams>(key: K, value: ScenarioParams[K]) {
     onChange({ ...scenario, [key]: value });
@@ -74,6 +96,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <input
           id="selling-price"
+          ref={textRefs.sellingPriceLocal}
           type="text"
           inputMode="decimal"
           className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
@@ -88,6 +111,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <input
           id="shipping"
+          ref={textRefs.inboundShippingLocal}
           type="text"
           inputMode="decimal"
           className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
@@ -102,6 +126,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <input
           id="packaging"
+          ref={textRefs.packagingLocal}
           type="text"
           inputMode="decimal"
           className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
@@ -117,6 +142,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           </label>
           <input
             id="ad-spend"
+            ref={textRefs.adSpendLocal}
             type="text"
             inputMode="decimal"
             className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
@@ -154,6 +180,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <input
           id="duty-pct"
+          ref={textRefs.dutyPct}
           type="text"
           inputMode="decimal"
           className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
@@ -168,6 +195,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <input
           id="referral-fee-pct"
+          ref={textRefs.referralFeePct}
           type="text"
           inputMode="decimal"
           className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"

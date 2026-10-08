@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { CatalogueItemType } from "../../lib/schemas";
 import { filterProducts } from "../../lib/search";
+import { useAdoptTypedValues } from "./useAdoptTypedValues";
 
 interface ProductPickerProps {
   items: CatalogueItemType[];
@@ -12,6 +13,10 @@ interface ProductPickerProps {
 
 export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerProps) {
   const [query, setQuery] = useState("");
+  const queryRef = useRef<HTMLInputElement>(null);
+  useAdoptTypedValues({ query: queryRef }, { query }, (typed) => {
+    if (typed.query !== undefined) setQuery(typed.query);
+  });
   const results = useMemo(() => filterProducts(items, query), [items, query]);
   const selected = items.find((item) => item.code === selectedCode) ?? null;
 
@@ -22,6 +27,7 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
       </label>
       <input
         id="product-search"
+        ref={queryRef}
         type="text"
         className="rounded border border-neutral-300 px-3 py-2 text-sm"
         placeholder={selected ? selected.name : "Search all products…"}
