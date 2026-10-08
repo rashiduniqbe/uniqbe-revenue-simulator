@@ -27,11 +27,10 @@ test("Back to simulator from /compare lands on a working simulator", async ({ pa
   await page.goto(`/compare?p=${item.code}`);
   await page.getByRole("link", { name: "Back to simulator" }).click();
   await expect(page).toHaveURL(new RegExp(`p=${item.code}`));
-  // The page is server-rendered; retry the fill until React has hydrated and taken the input.
-  await expect(async () => {
-    await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
-    await expect(page.getByText(/PROFITABLE|MARGINAL|LOSS-MAKING/)).toBeVisible({ timeout: 1000 });
-  }).toPass();
+  // Text typed before hydration is adopted (see e2e/prehydration.spec.ts),
+  // so one fill is enough whether or not React has hydrated yet.
+  await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
+  await expect(page.getByText(/PROFITABLE|MARGINAL|LOSS-MAKING/)).toBeVisible();
 });
 
 test("no Redis in CI: /compare shows the degraded FX warning", async ({ page }) => {
