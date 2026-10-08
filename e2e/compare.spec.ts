@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { expectFxAndDisclaimer, firstCatalogueItem } from "./helpers";
-import { AGAINST_DEPLOYMENT } from "./target";
+import { isAgainstDeployment } from "./target";
 
 test("/compare renders both markets from one product", async ({ page }) => {
   const item = firstCatalogueItem();
@@ -36,7 +36,7 @@ test("Back to simulator from /compare lands on a working simulator", async ({ pa
 
 test("no Redis in CI: /compare shows the degraded FX warning", async ({ page }) => {
   test.skip(
-    !process.env.CI || AGAINST_DEPLOYMENT,
+    !process.env.CI || isAgainstDeployment(),
     "needs the no-Redis local CI build; locally .env.local or a deployment has real Redis",
   );
   const item = firstCatalogueItem();
