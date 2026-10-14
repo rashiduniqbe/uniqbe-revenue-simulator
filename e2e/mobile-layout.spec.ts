@@ -38,4 +38,13 @@ test("desktop: verdict sits in the right column and is not sticky", async ({ pag
   const slotBox = await slot.boundingBox();
   const inputBox = await page.getByRole("textbox", { name: "Selling price" }).boundingBox();
   expect(slotBox!.x).toBeGreaterThan(inputBox!.x + inputBox!.width);
+
+  // The verdict is the first thing in the right column: above the waterfall and the
+  // breakdown table, and left-aligned with them.
+  const waterfallBox = await page.getByRole("img", { name: /Cost waterfall/ }).boundingBox();
+  const tableBox = await page.getByRole("table").boundingBox();
+  expect(slotBox!.y).toBeLessThan(waterfallBox!.y);
+  expect(slotBox!.y).toBeLessThan(tableBox!.y);
+  expect(Math.abs(slotBox!.x - waterfallBox!.x)).toBeLessThanOrEqual(2);
+  expect(Math.abs(slotBox!.x - tableBox!.x)).toBeLessThanOrEqual(2);
 });
