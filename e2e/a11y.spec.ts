@@ -63,9 +63,13 @@ test("no horizontal scroll on / and /compare", async ({ page }, testInfo) => {
 const MIN_TARGET_PX = 44;
 
 const TARGET_SCREENS = [
-  { name: "UK", query: "" },
-  { name: "AU eBay", query: "m=AU&pl=ebay" },
-  { name: "AU Shopify", query: "m=AU&pl=shopify" },
+  { name: "UK", url: (code: string) => `/?p=${code}&sp=9999.00` },
+  { name: "AU eBay", url: (code: string) => `/?m=AU&pl=ebay&p=${code}&sp=9999.00` },
+  { name: "AU Shopify", url: (code: string) => `/?m=AU&pl=shopify&p=${code}&sp=9999.00` },
+  {
+    name: "/compare",
+    url: (code: string) => `/compare?p=${code}&sp_uk=9999.00&sp_au=19999.00`,
+  },
 ];
 
 for (const screen of TARGET_SCREENS) {
@@ -74,8 +78,9 @@ for (const screen of TARGET_SCREENS) {
   }, testInfo) => {
     test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
     const item = firstCatalogueItem();
-    await page.goto(`/?${screen.query}&p=${item.code}&sp=9999.00`);
-    await expect(page.getByText(VERDICT)).toBeVisible();
+    await page.goto(screen.url(item.code));
+    // /compare shows one verdict per market, so match the first rather than require a single one.
+    await expect(page.getByText(VERDICT).first()).toBeVisible();
     const small = await page.evaluate((min) => {
       const controls = document.querySelectorAll("button, a[href], select, input");
       return [...controls].flatMap((el) => {

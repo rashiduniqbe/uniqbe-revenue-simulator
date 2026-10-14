@@ -1,10 +1,13 @@
 @import "tailwindcss";
 
 /* WCAG 2.4.7: one visible, high-contrast ring for every focus stop. The offset keeps it on the
-   page background even around the dark pills and buttons. */
-:focus-visible {
-  outline: 2px solid #0f172a;
-  outline-offset: 2px;
+   page background even around the dark pills and buttons. It lives in the base layer so a utility
+   class (e.g. an inset ring inside a scrolling list) can override it; unlayered CSS would win. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+  }
 }
 
 /* WCAG 2.4.11: the disclaimer bar is sticky at the bottom of every screen, and on a phone the

@@ -57,7 +57,7 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
               <li key={item.code}>
                 <button
                   type="button"
-                  className="min-h-11 w-full px-3 py-2 text-left text-sm hover:bg-neutral-100"
+                  className="min-h-11 w-full px-3 py-2 text-left text-sm hover:bg-neutral-100 focus-visible:-outline-offset-2"
                   onClick={() => {
                     onSelect(item.code);
                     setQuery("");

@@ -124,3 +124,28 @@ test("mobile: focus stays clear of the taller verdict card at 320px", async ({
   await page.setViewportSize({ width: 320, height: 568 });
   await expectFocusClearOfStickyBars(page);
 });
+
+// The result list scrolls (overflow-y: auto), so an outward ring on a full-width row is clipped at
+// its edges. The row must draw its ring inside its own box, which sits inside the list box.
+test("product result rows draw an inset focus ring that the list cannot clip", async ({ page }) => {
+  const item = firstCatalogueItem();
+  await page.goto("/");
+  await page.locator("#product-search").fill(item.name);
+  await page.locator("#product-search").press("Tab");
+  const ring = await page.evaluate(() => {
+    const row = document.activeElement as HTMLElement;
+    const list = row.closest("ul")!.getBoundingClientRect();
+    const box = row.getBoundingClientRect();
+    const style = getComputedStyle(row);
+    return {
+      isRow: row.tagName === "BUTTON" && row.closest("ul") !== null,
+      width: parseFloat(style.outlineWidth),
+      offset: parseFloat(style.outlineOffset),
+      insideList: box.left >= list.left && box.right <= list.right && box.top >= list.top,
+    };
+  });
+  expect(ring.isRow, "Tab from the search box lands on the first result row").toBe(true);
+  expect(ring.width).toBeGreaterThanOrEqual(MIN_RING_PX);
+  expect(ring.offset, "an inset ring has a negative offset").toBeLessThan(0);
+  expect(ring.insideList).toBe(true);
+});
