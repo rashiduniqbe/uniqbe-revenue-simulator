@@ -5,8 +5,9 @@ const SHEET_NAME = "Pricelist";
 const HEADER_SCAN_ROWS = 20;
 const EXPECTED_HEADERS = ["productcode", "brand", "product name", "category", "usd", "hkd"];
 
-const cellText = (row: ExcelJS.Row, col: number): string =>
-  String(row.getCell(col).value ?? "").trim();
+// .text is the displayed string, so formula and rich-text cells read as their result
+// instead of "[object Object]".
+const cellText = (row: ExcelJS.Row, col: number): string => row.getCell(col).text.trim();
 
 function findHeaderRow(sheet: ExcelJS.Worksheet): number {
   for (let r = 1; r <= HEADER_SCAN_ROWS; r++) {
@@ -15,6 +16,19 @@ function findHeaderRow(sheet: ExcelJS.Worksheet): number {
     if (JSON.stringify(values) === JSON.stringify(EXPECTED_HEADERS)) return r;
   }
   return -1;
+}
+
+// Reading stops at the first blank ProductCode. A stray blank row in the middle of the sheet
+// would silently drop every product below it, so refuse rather than publish a truncated list.
+function assertNothingAfterBlankRow(sheet: ExcelJS.Worksheet, blankRow: number): void {
+  for (let r = blankRow + 1; r <= sheet.rowCount; r++) {
+    if (cellText(sheet.getRow(r), 1) !== "") {
+      throw new Error(
+        `Row ${blankRow} is a blank row but row ${r} still has data. ` +
+          `Remove the blank row so the price list is not cut short.`,
+      );
+    }
+  }
 }
 
 export function readRows(sheet: ExcelJS.Worksheet, label: string): RawRow[] {
@@ -28,7 +42,10 @@ export function readRows(sheet: ExcelJS.Worksheet, label: string): RawRow[] {
   for (let r = headerRow + 1; r <= sheet.rowCount; r++) {
     const row = sheet.getRow(r);
     const productCode = cellText(row, 1);
-    if (productCode === "") break;
+    if (productCode === "") {
+      assertNothingAfterBlankRow(sheet, r);
+      break;
+    }
     rows.push({
       productCode,
       brand: cellText(row, 2),

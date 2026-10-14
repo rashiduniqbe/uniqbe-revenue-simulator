@@ -84,6 +84,41 @@ describe("buildCatalogueFromXlsx", () => {
     );
   });
 
+  it.each(["__proto__", "constructor", "toString", "hasOwnProperty"])(
+    "treats the inherited property name %j as an unmapped category",
+    async (category) => {
+      const buffer = await makeWorkbook([["AA00001", "B", "Thing", category, 100, 780]]);
+      await expect(buildCatalogueFromXlsx(buffer, FILE)).rejects.toThrow(/Unmapped category/);
+    },
+  );
+
+  it("clips an absurdly long echoed category so errors stay small", async () => {
+    const buffer = await makeWorkbook([["AA00001", "B", "Thing", "x".repeat(5000), 100, 780]]);
+    const error = await buildCatalogueFromXlsx(buffer, FILE).catch((e: unknown) => e);
+    expect((error as Error).message.length).toBeLessThan(800);
+  });
+
+  it("errors when a blank row would silently cut the price list short", async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Pricelist");
+    sheet.addRow(HEADERS);
+    sheet.addRow(validRow("AA00001"));
+    sheet.addRow([]);
+    sheet.addRow(validRow("AA00002"));
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+    await expect(buildCatalogueFromXlsx(buffer, FILE)).rejects.toThrow(/blank row/i);
+  });
+
+  it("reads formula cells by their displayed text, not [object Object]", async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Pricelist");
+    sheet.addRow(HEADERS);
+    sheet.addRow(["AA00001", "B", { formula: '"Thing"', result: "Thing" }, "Tablet", 100, 780]);
+    const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
+    const { catalogue } = await buildCatalogueFromXlsx(buffer, FILE);
+    expect(catalogue.items[0]?.name).toBe("Thing");
+  });
+
   it("rejects bytes that are not an xlsx", async () => {
     const buffer = Buffer.from("this is not a zip file");
     await expect(buildCatalogueFromXlsx(buffer, FILE)).rejects.toThrow();

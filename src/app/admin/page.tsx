@@ -1,4 +1,5 @@
 import { LogoutButton } from "../../components/admin/LogoutButton";
+import { PricelistUploader } from "../../components/admin/PricelistUploader";
 
 export default function AdminPage() {
   return (
@@ -7,7 +8,7 @@ export default function AdminPage() {
         <h1 className="text-2xl font-semibold">Price list upload</h1>
         <LogoutButton />
       </div>
-      <p>Signed in. The price list upload form arrives with the preview endpoint.</p>
+      <PricelistUploader />
     </>
   );
 }

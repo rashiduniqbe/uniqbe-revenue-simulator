@@ -12,6 +12,13 @@ export type RawRow = {
 
 export type CategoryMap = Record<string, { slug: CategorySlugType; label: string }>;
 
+const MAX_ECHOED_CHARS = 80;
+
+/** Spreadsheet text echoed into an error must not be able to make that error huge. */
+export function clip(value: string, max: number = MAX_ECHOED_CHARS): string {
+  return value.length > max ? `${value.slice(0, max)}…` : value;
+}
+
 const PEG_BAND_MIN = 7.7;
 const PEG_BAND_MAX = 7.9;
 
@@ -35,12 +42,13 @@ export function mapCategory(
   categoryMap: CategoryMap = CATEGORY_MAP,
 ): { slug: CategorySlugType; label: string } {
   const key = raw.trim().toLowerCase();
-  const mapped = categoryMap[key];
+  // hasOwn, not a plain lookup: "__proto__" or "constructor" must not resolve to inherited members.
+  const mapped = Object.hasOwn(categoryMap, key) ? categoryMap[key] : undefined;
   if (!mapped) {
     throw new Error(
-      `Unmapped category "${raw}".\n` +
+      `Unmapped category "${clip(raw)}".\n` +
         `  Add to CATEGORY_MAP in src/lib/catalogue-build/core.ts:\n` +
-        `      "${key}": { slug: "?", label: "?" },\n` +
+        `      "${clip(key)}": { slug: "?", label: "?" },\n` +
         `  Then add duty % and referral fee % for the new slug to BOTH markets\n` +
         `  in src/data/market-rules.json, or the fee lookup will throw at runtime.`,
     );
@@ -77,7 +85,9 @@ function normalizeRow(
   warnings: string[],
 ): CatalogueItemType {
   if (!Number.isInteger(raw.usd) || raw.usd <= 0) {
-    throw new Error(`Row ${raw.productCode}: USD must be a positive integer, got ${raw.usd}`);
+    throw new Error(
+      `Row ${clip(raw.productCode)}: USD must be a positive integer, got ${clip(String(raw.usd))}`,
+    );
   }
   const ratio = raw.hkd / raw.usd;
   if (ratio < PEG_BAND_MIN || ratio > PEG_BAND_MAX) {
@@ -114,7 +124,9 @@ export function buildCatalogue(
   const codes = new Set<string>();
   const items = rows.map((raw) => {
     if (codes.has(raw.productCode)) {
-      throw new Error(`Duplicate ProductCode "${raw.productCode}" found in ${sourceFile}.`);
+      throw new Error(
+        `Duplicate ProductCode "${clip(raw.productCode)}" found in ${clip(sourceFile)}.`,
+      );
     }
     codes.add(raw.productCode);
     return normalizeRow(raw, categoryMap, warnings);
