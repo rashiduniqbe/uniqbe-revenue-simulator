@@ -83,14 +83,12 @@ test("every keyboard focus stop shows a ring of at least 2px", async ({ page }) 
   expect(weak).toEqual([]);
 });
 
-test("mobile: a focused control is never hidden behind the sticky bars", async ({
-  page,
-}, testInfo) => {
-  test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
+// Walks the whole page forwards and backwards in the marginal state (the tallest sticky verdict
+// card) and fails on any stop that sits under the sticky verdict card or the disclaimer bar.
+async function expectFocusClearOfStickyBars(page: Page): Promise<void> {
   await page.goto("/");
   await pickFirstProduct(page);
   await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
-  // The marginal card is the tallest sticky state (it has an extra explanatory line).
   await reachMarginalVerdict(page);
   // A renamed id must not silently disable the overlap checks below.
   await expect(page.getByTestId("verdict-slot")).toHaveCount(1);
@@ -109,4 +107,20 @@ test("mobile: a focused control is never hidden behind the sticky bars", async (
   const reverse = await walkFocus(page, "Shift+Tab", lastIndex);
   expect(reverse.length).toBeGreaterThan(5);
   expect(hiddenBehindBars(reverse)).toEqual([]);
+}
+
+test("mobile: a focused control is never hidden behind the sticky bars", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
+  await expectFocusClearOfStickyBars(page);
+});
+
+// At 320px the marginal card's explanatory line wraps and the card grows taller than at 393px.
+test("mobile: focus stays clear of the taller verdict card at 320px", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
+  await page.setViewportSize({ width: 320, height: 568 });
+  await expectFocusClearOfStickyBars(page);
 });

@@ -19,6 +19,15 @@ html {
   }
 }
 
+/* Below ~376px the verdict card's text wraps and the sticky slot grows. Measured tallest state:
+   138px (marginal at 320px; loss-making is 130px up to 360px), against 122px at 340px and wider.
+   9.25rem (148px) clears 138px plus a small margin. */
+@media (max-width: 23.5rem) {
+  html {
+    scroll-padding-top: 9.25rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
