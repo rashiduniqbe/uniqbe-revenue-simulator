@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { copyLink, type ClipboardLike } from "../../lib/copy-link";
 import { track } from "../../lib/analytics/client";
 import { scenarioShared } from "../../lib/analytics/events";
+import { TEXT_LINK_CLASS } from "./control-classes";
 
 const COPIED_MESSAGE_MS = 2000;
 
@@ -28,7 +29,7 @@ export function CopyLinkButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <button type="button" className="text-sm underline" onClick={handleClick}>
+      <button type="button" className={TEXT_LINK_CLASS} onClick={handleClick}>
         Copy link
       </button>
       <span aria-live="polite" className="text-sm text-neutral-700">

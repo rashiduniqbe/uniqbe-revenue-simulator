@@ -23,8 +23,8 @@ export function MarketTabs({ market, onChange }: MarketTabsProps) {
           aria-selected={market === tab.value}
           className={
             market === tab.value
-              ? "rounded-full border border-neutral-900 bg-neutral-900 px-3 py-1 text-sm text-white"
-              : "rounded-full border border-neutral-300 px-3 py-1 text-sm text-neutral-700 hover:bg-neutral-100"
+              ? "rounded-full border border-neutral-900 bg-neutral-900 min-h-11 px-4 text-sm text-white"
+              : "rounded-full border border-neutral-300 min-h-11 px-4 text-sm text-neutral-700 hover:bg-neutral-100"
           }
           onClick={() => onChange(tab.value)}
         >

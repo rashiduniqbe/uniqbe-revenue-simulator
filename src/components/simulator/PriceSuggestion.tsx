@@ -7,6 +7,7 @@ import type { MarketRulesType } from "../../lib/schemas";
 import { isValidDecimalString } from "../../lib/decimal-validation";
 import { track } from "../../lib/analytics/client";
 import { priceSuggested } from "../../lib/analytics/events";
+import { BUTTON_TARGET_CLASS } from "./control-classes";
 
 type SuggestionInput = Omit<SimulationInput, "sellingPriceLocal">;
 
@@ -66,7 +67,7 @@ export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSu
         <input
           id="target-margin"
           type="number"
-          className="w-20 rounded border border-neutral-300 px-2 py-1 text-sm"
+          className="min-h-11 w-20 rounded border border-neutral-300 px-2 text-sm"
           value={targetMarginPct}
           min={0}
           max={99}
@@ -79,7 +80,7 @@ export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSu
         <span className="text-sm text-neutral-600">% margin</span>
         <button
           type="button"
-          className="rounded bg-neutral-900 px-3 py-1 text-sm text-white disabled:opacity-40"
+          className={`rounded bg-neutral-900 text-white disabled:opacity-40 ${BUTTON_TARGET_CLASS}`}
           disabled={disabled}
           onClick={handleSuggest}
         >
@@ -89,7 +90,11 @@ export function PriceSuggestion({ input, fx, rules, onApply, disabled }: PriceSu
       {result && (
         <p className="text-sm text-neutral-700">
           Suggested price: <span className="font-mono">{result.price}</span>{" "}
-          <button type="button" className="underline" onClick={() => onApply(result.price)}>
+          <button
+            type="button"
+            className="inline-flex min-h-11 items-center underline"
+            onClick={() => onApply(result.price)}
+          >
             Apply
           </button>
         </p>

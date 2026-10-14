@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import type { CatalogueItemType } from "../../lib/schemas";
 import { filterProducts } from "../../lib/search";
 import { useAdoptTypedValues } from "./useAdoptTypedValues";
+import { TEXT_INPUT_CLASS } from "./control-classes";
 
 interface ProductPickerProps {
   items: CatalogueItemType[];
@@ -29,7 +30,7 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
         id="product-search"
         ref={queryRef}
         type="text"
-        className="rounded border border-neutral-300 px-3 py-2 text-sm"
+        className={TEXT_INPUT_CLASS}
         placeholder={selected ? selected.name : "Search all products…"}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
@@ -45,7 +46,7 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
               <li key={item.code}>
                 <button
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100"
+                  className="min-h-11 w-full px-3 py-2 text-left text-sm hover:bg-neutral-100"
                   onClick={() => {
                     onSelect(item.code);
                     setQuery("");

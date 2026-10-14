@@ -5,6 +5,7 @@ import type { ScenarioParams } from "../../lib/url-state";
 import type { MarketRulesType, CategorySlugType } from "../../lib/schemas";
 import { deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { useAdoptTypedValues } from "./useAdoptTypedValues";
+import { MONO_INPUT_CLASS, TEXT_INPUT_CLASS } from "./control-classes";
 
 interface InputPanelProps {
   scenario: ScenarioParams;
@@ -70,7 +71,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </label>
         <select
           id="platform"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm"
+          className={TEXT_INPUT_CLASS}
           value={scenario.platform}
           onChange={(event) => onPlatformChange(event.target.value as ScenarioParams["platform"])}
         >
@@ -81,9 +82,10 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         </select>
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex min-h-11 items-center gap-2 text-sm">
         <input
           type="checkbox"
+          className="size-5"
           checked={scenario.taxRegistered}
           onChange={(event) => set("taxRegistered", event.target.checked)}
         />
@@ -99,7 +101,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           ref={textRefs.sellingPriceLocal}
           type="text"
           inputMode="decimal"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+          className={MONO_INPUT_CLASS}
           value={scenario.sellingPriceLocal}
           onChange={(event) => set("sellingPriceLocal", event.target.value)}
         />
@@ -114,7 +116,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           ref={textRefs.inboundShippingLocal}
           type="text"
           inputMode="decimal"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+          className={MONO_INPUT_CLASS}
           value={scenario.inboundShippingLocal}
           onChange={(event) => set("inboundShippingLocal", event.target.value)}
         />
@@ -129,7 +131,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           ref={textRefs.packagingLocal}
           type="text"
           inputMode="decimal"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+          className={MONO_INPUT_CLASS}
           value={scenario.packagingLocal}
           onChange={(event) => set("packagingLocal", event.target.value)}
         />
@@ -145,7 +147,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
             ref={textRefs.adSpendLocal}
             type="text"
             inputMode="decimal"
-            className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+            className={MONO_INPUT_CLASS}
             value={scenario.adSpendLocal}
             onChange={(event) => set("adSpendLocal", event.target.value)}
           />
@@ -153,9 +155,10 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
       )}
 
       {scenario.market === "AU" && scenario.platform === "ebay" && (
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 items-center gap-2 text-sm">
           <input
             type="checkbox"
+            className="size-5"
             checked={scenario.ebayFreeTier}
             onChange={(event) => set("ebayFreeTier", event.target.checked)}
           />
@@ -164,9 +167,10 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
       )}
 
       {scenario.market === "AU" && scenario.platform === "shopify" && (
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 items-center gap-2 text-sm">
           <input
             type="checkbox"
+            className="size-5"
             checked={scenario.shopifyHasAbn}
             onChange={(event) => set("shopifyHasAbn", event.target.checked)}
           />
@@ -183,7 +187,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           ref={textRefs.dutyPct}
           type="text"
           inputMode="decimal"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+          className={MONO_INPUT_CLASS}
           value={scenario.dutyPct}
           onChange={(event) => set("dutyPct", event.target.value)}
         />
@@ -198,7 +202,7 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           ref={textRefs.referralFeePct}
           type="text"
           inputMode="decimal"
-          className="block rounded border border-neutral-300 px-3 py-2 text-sm font-mono"
+          className={MONO_INPUT_CLASS}
           value={scenario.referralFeePct}
           onChange={(event) => set("referralFeePct", event.target.value)}
         />

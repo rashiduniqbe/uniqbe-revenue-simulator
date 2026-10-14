@@ -59,3 +59,35 @@ test("no horizontal scroll on / and /compare", async ({ page }, testInfo) => {
     expect(overflow, `${path} overflows horizontally`).toBeLessThanOrEqual(0);
   }
 });
+
+const MIN_TARGET_PX = 44;
+
+const TARGET_SCREENS = [
+  { name: "UK", query: "" },
+  { name: "AU eBay", query: "m=AU&pl=ebay" },
+  { name: "AU Shopify", query: "m=AU&pl=shopify" },
+];
+
+for (const screen of TARGET_SCREENS) {
+  test(`mobile: every control is at least 44px tall (${screen.name})`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
+    const item = firstCatalogueItem();
+    await page.goto(`/?${screen.query}&p=${item.code}&sp=9999.00`);
+    await expect(page.getByText(VERDICT)).toBeVisible();
+    const small = await page.evaluate((min) => {
+      const controls = document.querySelectorAll("button, a[href], select, input");
+      return [...controls].flatMap((el) => {
+        // A checkbox's hit area is its wrapping label, not the 13px box.
+        const target =
+          el instanceof HTMLInputElement && el.type === "checkbox" ? el.closest("label") : el;
+        const rect = target?.getBoundingClientRect();
+        if (!rect || rect.width === 0 || rect.height === 0) return [];
+        const name = (target?.textContent ?? "").trim().slice(0, 30) || el.id;
+        return rect.height < min ? [`${name}: ${Math.round(rect.height)}px`] : [];
+      });
+    }, MIN_TARGET_PX);
+    expect(small).toEqual([]);
+  });
+}

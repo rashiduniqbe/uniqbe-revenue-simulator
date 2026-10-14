@@ -20,6 +20,7 @@ import { WarningList } from "./WarningList";
 import { MarketTabs } from "./MarketTabs";
 import { ThresholdBanner } from "./ThresholdBanner";
 import { CopyLinkButton } from "./CopyLinkButton";
+import { TEXT_LINK_CLASS } from "./control-classes";
 import { track } from "../../lib/analytics/client";
 import {
   calculationRun,
@@ -129,7 +130,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
       <header className="border-b border-neutral-200 bg-white px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h1 className="text-lg font-semibold">Uniqbe Price Simulator</h1>
           <MarketTabs market={market} onChange={selectMarket} />
         </div>
@@ -161,7 +162,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             <div className="flex flex-col gap-1">
               <a
                 href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
-                className="text-sm underline"
+                className={TEXT_LINK_CLASS}
               >
                 Compare UK vs Australia
               </a>

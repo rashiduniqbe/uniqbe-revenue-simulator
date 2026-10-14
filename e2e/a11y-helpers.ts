@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 import { expect } from "./fixtures";
 
 export const VERDICT = /PROFITABLE|MARGINAL|LOSS-MAKING/;
-export const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
+export const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 export async function expectNoViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
