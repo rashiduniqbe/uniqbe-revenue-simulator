@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/* WCAG 2.4.7: one visible, high-contrast ring for every focus stop. The offset keeps it on the
+   page background even around the dark pills and buttons. It lives in the base layer so a utility
+   class (e.g. an inset ring inside a scrolling list) can override it; unlayered CSS would win. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+  }
+}
+
+/* WCAG 2.4.11: the disclaimer bar is sticky at the bottom of every screen, and on a phone the
+   verdict card is sticky at the top. Reserve room for both so focus never lands under them. */
+html {
+  scroll-padding-bottom: 6rem;
+}
+
+@media (max-width: 47.99rem) {
+  html {
+    scroll-padding-top: 8rem;
+  }
+}
+
+/* Below ~376px the verdict card's text wraps and the sticky slot grows. Measured tallest state:
+   138px (marginal at 320px; loss-making is 130px up to 360px), against 122px at 340px and wider.
+   9.25rem (148px) clears 138px plus a small margin. */
+@media (max-width: 23.5rem) {
+  html {
+    scroll-padding-top: 9.25rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

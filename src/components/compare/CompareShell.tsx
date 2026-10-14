@@ -13,6 +13,7 @@ import { BreakdownTable } from "../simulator/BreakdownTable";
 import { WarningList } from "../simulator/WarningList";
 import { ThresholdBanner } from "../simulator/ThresholdBanner";
 import { useAdoptTypedValues } from "../simulator/useAdoptTypedValues";
+import { MONO_INPUT_CLASS, TEXT_LINK_CLASS } from "../simulator/control-classes";
 import { track } from "../../lib/analytics/client";
 import { comparisonViewed } from "../../lib/analytics/events";
 
@@ -55,9 +56,9 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
       <header className="border-b border-neutral-200 bg-white px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h1 className="text-lg font-semibold">Compare UK vs Australia</h1>
-          <a href={backHref} className="text-sm underline">
+          <a href={backHref} className={TEXT_LINK_CLASS}>
             Back to simulator
           </a>
         </div>
@@ -93,7 +94,7 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
                     ref={priceRefs[col.priceKey]}
                     type="text"
                     inputMode="decimal"
-                    className="block rounded border border-neutral-300 px-3 py-2 font-mono text-sm"
+                    className={MONO_INPUT_CLASS}
                     value={price}
                     onChange={(e) => setParams({ [col.priceKey]: e.target.value })}
                   />

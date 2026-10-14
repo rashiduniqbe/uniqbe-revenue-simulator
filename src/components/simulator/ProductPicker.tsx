@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import type { CatalogueItemType } from "../../lib/schemas";
 import { filterProducts } from "../../lib/search";
 import { useAdoptTypedValues } from "./useAdoptTypedValues";
+import { TEXT_INPUT_CLASS } from "./control-classes";
 
 interface ProductPickerProps {
   items: CatalogueItemType[];
@@ -19,6 +20,14 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
   });
   const results = useMemo(() => filterProducts(items, query), [items, query]);
   const selected = items.find((item) => item.code === selectedCode) ?? null;
+  const statusText =
+    query.trim() === ""
+      ? ""
+      : results.length === 0
+        ? "No products match."
+        : results.length === 1
+          ? "1 product matches."
+          : `${results.length} products match.`;
 
   return (
     <div className="flex flex-col gap-1">
@@ -29,11 +38,14 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
         id="product-search"
         ref={queryRef}
         type="text"
-        className="rounded border border-neutral-300 px-3 py-2 text-sm"
+        className={TEXT_INPUT_CLASS}
         placeholder={selected ? selected.name : "Search all products…"}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
+      <p data-testid="product-search-status" aria-live="polite" className="sr-only">
+        {statusText}
+      </p>
       {query.trim() !== "" && (
         <ul className="max-h-64 overflow-y-auto rounded border border-neutral-200 bg-white">
           {results.length === 0 ? (
@@ -45,7 +57,7 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
               <li key={item.code}>
                 <button
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100"
+                  className="min-h-11 w-full px-3 py-2 text-left text-sm hover:bg-neutral-100 focus-visible:-outline-offset-2"
                   onClick={() => {
                     onSelect(item.code);
                     setQuery("");

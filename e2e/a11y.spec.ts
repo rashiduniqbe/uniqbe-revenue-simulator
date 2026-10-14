@@ -1,28 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
-import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import { VERDICT, expectNoViolations, tabUntil } from "./a11y-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
-
-const VERDICT = /PROFITABLE|MARGINAL|LOSS-MAKING/;
-const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-
-async function expectNoViolations(page: Page): Promise<void> {
-  const results = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
-  expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`)).toEqual([]);
-}
-
-async function tabUntil(
-  page: Page,
-  predicate: string,
-  key = "Tab",
-  maxPresses = 40,
-): Promise<void> {
-  for (let i = 0; i < maxPresses; i++) {
-    await page.keyboard.press(key);
-    if (await page.evaluate(predicate)) return;
-  }
-  throw new Error(`focus never reached: ${predicate}`);
-}
 
 test("axe: / with a UK result on screen", async ({ page }) => {
   await page.goto("/");
@@ -61,10 +39,10 @@ test("keyboard only: pick -> price -> verdict -> switch market", async ({ page }
   await tabUntil(page, `document.activeElement?.id === "selling-price"`);
   await page.keyboard.type("9999.00");
   await expect(page.getByText(VERDICT)).toBeVisible();
-  // Market tabs sit before the picker in DOM order, so walk focus backwards to reach them.
+  // The market toggle buttons sit before the picker in DOM order, so walk focus backwards to reach them.
   await tabUntil(
     page,
-    `document.activeElement?.getAttribute("role") === "tab" && (document.activeElement?.textContent?.includes("Australia") ?? false)`,
+    `document.activeElement?.getAttribute("aria-pressed") !== null && (document.activeElement?.textContent?.includes("Australia") ?? false)`,
     "Shift+Tab",
   );
   await page.keyboard.press("Enter");
@@ -80,4 +58,70 @@ test("no horizontal scroll on / and /compare", async ({ page }, testInfo) => {
     );
     expect(overflow, `${path} overflows horizontally`).toBeLessThanOrEqual(0);
   }
+});
+
+const MIN_TARGET_PX = 44;
+
+const TARGET_SCREENS = [
+  { name: "UK", url: (code: string) => `/?p=${code}&sp=9999.00` },
+  { name: "AU eBay", url: (code: string) => `/?m=AU&pl=ebay&p=${code}&sp=9999.00` },
+  { name: "AU Shopify", url: (code: string) => `/?m=AU&pl=shopify&p=${code}&sp=9999.00` },
+  {
+    name: "/compare",
+    url: (code: string) => `/compare?p=${code}&sp_uk=9999.00&sp_au=19999.00`,
+  },
+];
+
+for (const screen of TARGET_SCREENS) {
+  test(`mobile: every control is at least 44px tall (${screen.name})`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
+    const item = firstCatalogueItem();
+    await page.goto(screen.url(item.code));
+    // /compare shows one verdict per market, so match the first rather than require a single one.
+    await expect(page.getByText(VERDICT).first()).toBeVisible();
+    const small = await page.evaluate((min) => {
+      const controls = document.querySelectorAll("button, a[href], select, input");
+      return [...controls].flatMap((el) => {
+        // A checkbox's hit area is its wrapping label, not the 13px box.
+        const target =
+          el instanceof HTMLInputElement && el.type === "checkbox" ? el.closest("label") : el;
+        const rect = target?.getBoundingClientRect();
+        if (!rect || rect.width === 0 || rect.height === 0) return [];
+        const name = (target?.textContent ?? "").trim().slice(0, 30) || el.id;
+        return rect.height < min ? [`${name}: ${Math.round(rect.height)}px`] : [];
+      });
+    }, MIN_TARGET_PX);
+    expect(small).toEqual([]);
+  });
+}
+
+test("market switch is a labelled group of toggle buttons", async ({ page }) => {
+  await page.goto("/");
+  const group = page.getByRole("group", { name: "Market" });
+  await expect(group.getByRole("button", { name: /UK/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(group.getByRole("button", { name: /Australia/ })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await group.getByRole("button", { name: /Australia/ }).click();
+  await expect(group.getByRole("button", { name: /Australia/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page).toHaveURL(/m=AU/);
+});
+
+test("product search announces how many results there are", async ({ page }) => {
+  const item = firstCatalogueItem();
+  await page.goto("/");
+  const search = page.locator("#product-search");
+  const status = page.getByTestId("product-search-status");
+  await expect(status).toHaveText("");
+  await search.fill(item.name);
+  // Never assert a number: the catalogue changes weekly.
+  await expect(status).toHaveText(/^\d+ products? match(es)?\.$/);
+  await search.fill("zzzzqqqq");
+  await expect(status).toHaveText("No products match.");
 });
