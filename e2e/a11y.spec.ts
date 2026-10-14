@@ -1,28 +1,6 @@
-import AxeBuilder from "@axe-core/playwright";
-import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import { VERDICT, expectNoViolations, tabUntil } from "./a11y-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
-
-const VERDICT = /PROFITABLE|MARGINAL|LOSS-MAKING/;
-const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
-
-async function expectNoViolations(page: Page): Promise<void> {
-  const results = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
-  expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`)).toEqual([]);
-}
-
-async function tabUntil(
-  page: Page,
-  predicate: string,
-  key = "Tab",
-  maxPresses = 40,
-): Promise<void> {
-  for (let i = 0; i < maxPresses; i++) {
-    await page.keyboard.press(key);
-    if (await page.evaluate(predicate)) return;
-  }
-  throw new Error(`focus never reached: ${predicate}`);
-}
 
 test("axe: / with a UK result on screen", async ({ page }) => {
   await page.goto("/");
