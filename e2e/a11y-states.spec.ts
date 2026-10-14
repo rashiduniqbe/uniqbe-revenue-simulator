@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { VERDICT, expectNoViolations, reachMarginalVerdict } from "./a11y-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
@@ -5,13 +6,42 @@ import { firstCatalogueItem, pickFirstProduct } from "./helpers";
 const REFLOW_WIDTH = 320;
 const REFLOW_HEIGHT = 568;
 
-const STATES = [
-  { name: "loss-making verdict", query: "sp=0.01" },
-  { name: "UK VAT-registered", query: "reg=true&sp=9999.00" },
-  { name: "AU eBay free-tier toggle", query: "m=AU&pl=ebay&et=true&sp=9999.00" },
+interface AxeState {
+  name: string;
+  query: string;
+  // Proves the URL params actually put the UI in the state the test name promises.
+  assertReached: (page: Page) => Promise<void>;
+}
+
+const STATES: AxeState[] = [
+  {
+    name: "loss-making verdict",
+    query: "sp=0.01",
+    assertReached: async (page) => {
+      await expect(page.getByText("LOSS-MAKING").first()).toBeVisible();
+    },
+  },
+  {
+    name: "UK VAT-registered",
+    query: "reg=true&sp=9999.00",
+    assertReached: async (page) => {
+      await expect(page.getByRole("checkbox", { name: /VAT-registered/ })).toBeChecked();
+    },
+  },
+  {
+    name: "AU eBay free-tier toggle",
+    query: "m=AU&pl=ebay&et=true&sp=9999.00",
+    assertReached: async (page) => {
+      await expect(page.getByRole("checkbox", { name: /eBay free tier/ })).toBeChecked();
+    },
+  },
   {
     name: "AU Shopify with ABN and ad spend",
     query: "m=AU&pl=shopify&abn=true&ad=5.00&sp=9999.00",
+    assertReached: async (page) => {
+      await expect(page.getByRole("checkbox", { name: /ABN/ })).toBeChecked();
+      await expect(page.locator("#ad-spend")).toHaveValue("5.00");
+    },
   },
 ];
 
@@ -19,7 +49,8 @@ for (const state of STATES) {
   test(`axe: ${state.name}`, async ({ page }) => {
     const item = firstCatalogueItem();
     await page.goto(`/?p=${item.code}&${state.query}`);
-    await expect(page.getByText(VERDICT)).toBeVisible();
+    await expect(page.getByText(VERDICT).first()).toBeVisible();
+    await state.assertReached(page);
     await expectNoViolations(page);
   });
 }
