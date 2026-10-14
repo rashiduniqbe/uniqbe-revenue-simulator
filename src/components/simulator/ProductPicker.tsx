@@ -20,6 +20,14 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
   });
   const results = useMemo(() => filterProducts(items, query), [items, query]);
   const selected = items.find((item) => item.code === selectedCode) ?? null;
+  const statusText =
+    query.trim() === ""
+      ? ""
+      : results.length === 0
+        ? "No products match."
+        : results.length === 1
+          ? "1 product matches."
+          : `${results.length} products match.`;
 
   return (
     <div className="flex flex-col gap-1">
@@ -35,6 +43,9 @@ export function ProductPicker({ items, selectedCode, onSelect }: ProductPickerPr
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
+      <p data-testid="product-search-status" aria-live="polite" className="sr-only">
+        {statusText}
+      </p>
       {query.trim() !== "" && (
         <ul className="max-h-64 overflow-y-auto rounded border border-neutral-200 bg-white">
           {results.length === 0 ? (

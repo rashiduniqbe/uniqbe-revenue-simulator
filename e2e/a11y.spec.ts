@@ -107,3 +107,16 @@ test("market switch is a labelled group of toggle buttons", async ({ page }) => 
   );
   await expect(page).toHaveURL(/m=AU/);
 });
+
+test("product search announces how many results there are", async ({ page }) => {
+  const item = firstCatalogueItem();
+  await page.goto("/");
+  const search = page.locator("#product-search");
+  const status = page.getByTestId("product-search-status");
+  await expect(status).toHaveText("");
+  await search.fill(item.name);
+  // Never assert a number: the catalogue changes weekly.
+  await expect(status).toHaveText(/^\d+ products? match(es)?\.$/);
+  await search.fill("zzzzqqqq");
+  await expect(status).toHaveText("No products match.");
+});
