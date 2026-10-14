@@ -22,6 +22,13 @@ type RedisLike = {
 export function redisFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): RedisLike | null {
+  return upstashFromEnv(env);
+}
+
+// The full client, for callers that need more than get/set (e.g. the admin login limiter).
+export function upstashFromEnv(
+  env: Record<string, string | undefined> = process.env,
+): Redis | null {
   const url = env.UPSTASH_REDIS_REST_URL || env.KV_REST_API_URL;
   const token = env.UPSTASH_REDIS_REST_TOKEN || env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
