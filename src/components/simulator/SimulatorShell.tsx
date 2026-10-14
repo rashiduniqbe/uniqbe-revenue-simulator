@@ -136,8 +136,22 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
       </header>
 
-      <main className="flex flex-1 flex-col gap-6 px-4 py-6 md:flex-row">
-        <section className="flex flex-col gap-4 md:w-80">
+      <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:gap-x-6">
+        {result && (
+          <div
+            data-testid="verdict-slot"
+            className="sticky top-0 z-10 -mx-4 bg-[#FAFAF9] px-4 py-2 md:static md:col-start-2 md:row-start-1 md:mx-0 md:bg-transparent md:p-0"
+          >
+            <VerdictCard
+              verdict={result.verdict}
+              netProfit={result.netProfit}
+              marginPct={result.marginPct}
+              currency={result.currency}
+            />
+          </div>
+        )}
+
+        <section className="flex flex-col gap-4 md:col-start-1 md:row-span-2 md:row-start-1">
           <ProductPicker
             items={catalogue.items}
             selectedCode={scenario.productCode}
@@ -171,9 +185,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
           )}
         </section>
 
-        <section className="flex-1">
+        <section
+          className={`flex flex-col gap-4 md:col-start-2 ${result ? "md:row-start-2" : "md:row-start-1"}`}
+        >
           {result ? (
-            <div className="flex flex-col gap-4">
+            <>
               {result.auAboveThreshold !== null && rules.AU.deMinimisLocal !== null && (
                 <ThresholdBanner
                   aboveThreshold={result.auAboveThreshold}
@@ -186,12 +202,6 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
                     ? result.warnings.filter((w) => w.code !== "AU_BELOW_THRESHOLD")
                     : result.warnings
                 }
-              />
-              <VerdictCard
-                verdict={result.verdict}
-                netProfit={result.netProfit}
-                marginPct={result.marginPct}
-                currency={result.currency}
               />
               <CostWaterfall
                 lines={result.breakdown}
@@ -206,7 +216,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
                 hoveredLabel={hoveredLabel}
                 onHoverLabel={setHoveredLabel}
               />
-            </div>
+            </>
           ) : (
             <p className="text-neutral-500">
               Select a product and enter a selling price to see your profit breakdown.
