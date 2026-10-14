@@ -137,7 +137,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
       </header>
 
-      <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:gap-x-6">
+      <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:grid-rows-[auto_1fr] md:gap-x-6">
         {result && (
           <div
             data-testid="verdict-slot"
