@@ -19,6 +19,8 @@ export type PreviewResult =
       currentPriceListDate: string;
       newPriceListDate: string;
       checksum: string;
+      /** The built catalogue. For server-side use only: it is never sent to the browser. */
+      catalogue: CatalogueType;
       diff: CatalogueDiff;
       warnings: string[];
       largeChanges: Repriced[];
@@ -68,6 +70,7 @@ export async function previewPricelist(
     currentPriceListDate: current.priceListDate,
     newPriceListDate: catalogue.priceListDate,
     checksum: catalogue.checksum,
+    catalogue,
     diff,
     warnings,
     largeChanges: diff.repriced.filter((r) => Math.abs(r.pctChange) >= LARGE_CHANGE_PCT_THRESHOLD),

@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
-import { buildCatalogueFromXlsx } from "../../src/lib/catalogue-build";
+import { buildCatalogueFromXlsx, serializeCatalogue } from "../../src/lib/catalogue-build";
 import { Catalogue } from "../../src/lib/schemas";
 
 const HEADERS = ["ProductCode", "Brand", "Product Name", "Category", "USD", "HKD"];
@@ -39,6 +39,13 @@ describe("buildCatalogueFromXlsx", () => {
     expect(catalogue.sourceFile).toBe(FILE);
     expect(catalogue.productCount).toBe(catalogue.items.length);
     expect(warnings).toEqual([]);
+  });
+
+  it("serializes exactly as the CLI writes it, so the upload and the CLI commit identical bytes", async () => {
+    const buffer = await makeWorkbook([validRow("AA00001")]);
+    const { catalogue } = await buildCatalogueFromXlsx(buffer, FILE);
+    expect(serializeCatalogue(catalogue)).toBe(JSON.stringify(catalogue, null, 1));
+    expect(JSON.parse(serializeCatalogue(catalogue))).toEqual(catalogue);
   });
 
   it("finds the header row below leading banner rows", async () => {

@@ -145,3 +145,8 @@ export function buildCatalogue(
   });
   return { catalogue, warnings };
 }
+
+/** The exact bytes committed as src/data/catalogue.json, by both the CLI and the admin upload. */
+export function serializeCatalogue(catalogue: BuildResult["catalogue"]): string {
+  return JSON.stringify(catalogue, null, 1);
+}

@@ -16,6 +16,7 @@ export type PreviewSuccess = {
 };
 
 type PreviewFailure = { ok: false; errors: string[] };
+type PublishSuccess = { ok: true; prUrl: string; prNumber: number; alreadyExisted: boolean };
 
 const NETWORK_ERROR = "Could not reach the server. Try again.";
 
@@ -105,29 +106,59 @@ export function PricelistUploader() {
   const [isPending, setIsPending] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [result, setResult] = useState<PreviewSuccess | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [pr, setPr] = useState<PublishSuccess | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  function resetOutcome() {
+    setErrors([]);
+    setResult(null);
+    setPr(null);
+    setPublishError(null);
+  }
+
+  // Both steps send the same file; the server validates it again on publish.
+  async function post<T>(path: string): Promise<T | null> {
+    if (!file) return null;
+    const form = new FormData();
+    form.set("file", file);
+    if (allowOlder) form.set("allowOlder", "true");
+    const response = await fetch(path, { method: "POST", body: form });
+    if (response.status === 401) {
+      window.location.assign("/admin/login");
+      return null;
+    }
+    return (await response.json()) as T;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!file) return;
     setIsPending(true);
-    setErrors([]);
-    setResult(null);
+    resetOutcome();
     try {
-      const form = new FormData();
-      form.set("file", file);
-      if (allowOlder) form.set("allowOlder", "true");
-      const response = await fetch("/api/admin/pricelist/preview", { method: "POST", body: form });
-      if (response.status === 401) {
-        window.location.assign("/admin/login");
-        return;
-      }
-      const body = (await response.json()) as PreviewSuccess | PreviewFailure;
+      const body = await post<PreviewSuccess | PreviewFailure>("/api/admin/pricelist/preview");
+      if (!body) return;
       if (body.ok) setResult(body);
       else setErrors(body.errors);
     } catch {
       setErrors([NETWORK_ERROR]);
     } finally {
       setIsPending(false);
+    }
+  }
+
+  async function handlePublish() {
+    setIsPublishing(true);
+    setPublishError(null);
+    try {
+      const body = await post<PublishSuccess | PreviewFailure>("/api/admin/pricelist/publish");
+      if (!body) return;
+      if (body.ok) setPr(body);
+      else setPublishError(body.errors.join(" "));
+    } catch {
+      setPublishError(NETWORK_ERROR);
+    } finally {
+      setIsPublishing(false);
     }
   }
 
@@ -141,7 +172,10 @@ export function PricelistUploader() {
             name="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
-            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+            onChange={(event) => {
+              setFile(event.target.files?.[0] ?? null);
+              resetOutcome();
+            }}
             className="text-base font-normal"
           />
         </label>
@@ -149,7 +183,10 @@ export function PricelistUploader() {
           <input
             type="checkbox"
             checked={allowOlder}
-            onChange={(event) => setAllowOlder(event.target.checked)}
+            onChange={(event) => {
+              setAllowOlder(event.target.checked);
+              resetOutcome();
+            }}
           />
           Allow an older or same-date price list
         </label>
@@ -174,6 +211,36 @@ export function PricelistUploader() {
           </div>
         ) : null}
         {result ? <PreviewResult result={result} /> : null}
+        {result && !pr ? (
+          <div className="flex flex-col items-start gap-2">
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={isPublishing}
+              className="rounded bg-green-800 px-4 py-2 text-white disabled:opacity-60"
+            >
+              {isPublishing ? "Creating pull request…" : "Create pull request"}
+            </button>
+            <p className="text-sm text-gray-700">
+              Opens a pull request with this price list. Nothing goes live until it is merged.
+            </p>
+          </div>
+        ) : null}
+        {publishError ? (
+          <p role="alert" className="rounded border border-red-600 bg-red-50 p-3 text-sm">
+            {publishError}
+          </p>
+        ) : null}
+        {pr ? (
+          <p className="rounded border border-green-700 bg-green-50 p-3 text-sm">
+            {pr.alreadyExisted
+              ? "A pull request for this price list is already open: "
+              : "Pull request created: "}
+            <a href={pr.prUrl} className="font-medium underline" target="_blank" rel="noreferrer">
+              #{pr.prNumber}
+            </a>
+          </p>
+        ) : null}
       </div>
     </div>
   );

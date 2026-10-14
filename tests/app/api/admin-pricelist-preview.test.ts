@@ -1,46 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as preview } from "../../../src/app/api/admin/pricelist/preview/route";
-import { ADMIN_SESSION_COOKIE, createSessionToken } from "../../../src/lib/admin/session";
+import { SESSION_SECRET as SECRET, uploadRequest } from "../../helpers/upload-request";
 import { MAX_UPLOAD_BYTES } from "../../../src/lib/admin/pricelist-validate";
-import { makeWorkbook, quotationName, validRow } from "../../helpers/make-workbook";
-
-const SECRET = "test-session-secret-0123456789abcdef";
-const XLSX_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-// Far-future date so it is newer than whatever price list is currently committed.
-const NEWER = quotationName("29991231");
-
-async function uploadRequest(
-  options: {
-    name?: string;
-    bytes?: BlobPart;
-    field?: string;
-    allowOlder?: boolean;
-    auth?: boolean;
-    contentLength?: number | null;
-  } = {},
-): Promise<Request> {
-  const form = new FormData();
-  const bytes = options.bytes ?? (await makeWorkbook([validRow("ZZ99901", 150)]));
-  form.set(options.field ?? "file", new File([bytes], options.name ?? NEWER, { type: XLSX_TYPE }));
-  if (options.allowOlder) form.set("allowOlder", "true");
-  const headers: Record<string, string> = {};
-  if (options.auth !== false) {
-    const token = await createSessionToken(SECRET, Date.now());
-    headers.cookie = `${ADMIN_SESSION_COOKIE}=${token}`;
-  }
-  // Browsers send Content-Length for form uploads; Request() does not add it by itself.
-  const encoded = new Request("https://example.test/", { method: "POST", body: form });
-  const body = await encoded.blob();
-  headers["content-type"] = encoded.headers.get("content-type") ?? "";
-  if (options.contentLength !== null) {
-    headers["content-length"] = String(options.contentLength ?? body.size);
-  }
-  return new Request("https://example.test/api/admin/pricelist/preview", {
-    method: "POST",
-    headers,
-    body,
-  });
-}
+import { makeWorkbook, quotationName } from "../../helpers/make-workbook";
 
 describe("POST /api/admin/pricelist/preview", () => {
   beforeEach(() => vi.stubEnv("ADMIN_SESSION_SECRET", SECRET));
@@ -56,6 +18,7 @@ describe("POST /api/admin/pricelist/preview", () => {
     expect(response.status).toBe(200);
     const body = await response.json();
     expect(body.ok).toBe(true);
+    expect(body).not.toHaveProperty("catalogue");
     expect(body.newPriceListDate).toBe("2999-12-31");
     expect(body.diff.added.map((i: { code: string }) => i.code)).toContain("ZZ99901");
     expect(Array.isArray(body.warnings)).toBe(true);

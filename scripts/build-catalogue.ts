@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import {
   buildCatalogue as buildCatalogueCore,
   readWorkbookFile,
+  serializeCatalogue,
   CATEGORY_MAP,
   type CategoryMap,
   type RawRow,
@@ -72,7 +73,7 @@ async function main() {
     return;
   }
 
-  writeFileSync(outputPath, JSON.stringify(catalogue, null, 1));
+  writeFileSync(outputPath, serializeCatalogue(catalogue));
   console.log(
     `Wrote ${catalogue.items.length} products to ${outputPath} (checksum ${catalogue.checksum}).`,
   );
