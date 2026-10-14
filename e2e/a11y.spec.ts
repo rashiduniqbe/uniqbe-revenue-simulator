@@ -39,10 +39,10 @@ test("keyboard only: pick -> price -> verdict -> switch market", async ({ page }
   await tabUntil(page, `document.activeElement?.id === "selling-price"`);
   await page.keyboard.type("9999.00");
   await expect(page.getByText(VERDICT)).toBeVisible();
-  // Market tabs sit before the picker in DOM order, so walk focus backwards to reach them.
+  // The market toggle buttons sit before the picker in DOM order, so walk focus backwards to reach them.
   await tabUntil(
     page,
-    `document.activeElement?.getAttribute("role") === "tab" && (document.activeElement?.textContent?.includes("Australia") ?? false)`,
+    `document.activeElement?.getAttribute("aria-pressed") !== null && (document.activeElement?.textContent?.includes("Australia") ?? false)`,
     "Shift+Tab",
   );
   await page.keyboard.press("Enter");
@@ -91,3 +91,19 @@ for (const screen of TARGET_SCREENS) {
     expect(small).toEqual([]);
   });
 }
+
+test("market switch is a labelled group of toggle buttons", async ({ page }) => {
+  await page.goto("/");
+  const group = page.getByRole("group", { name: "Market" });
+  await expect(group.getByRole("button", { name: /UK/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(group.getByRole("button", { name: /Australia/ })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await group.getByRole("button", { name: /Australia/ }).click();
+  await expect(group.getByRole("button", { name: /Australia/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page).toHaveURL(/m=AU/);
+});

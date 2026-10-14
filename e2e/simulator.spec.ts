@@ -16,7 +16,7 @@ test("UK: pick product -> enter price -> see verdict", async ({ page }) => {
 test("AU: switch market -> threshold banner -> eBay free-tier toggle", async ({ page }) => {
   await page.goto("/");
   await pickFirstProduct(page);
-  await page.getByRole("tab", { name: /Australia/ }).click();
+  await page.getByRole("button", { name: /Australia/ }).click();
   await expect(page).toHaveURL(/m=AU/);
   await page.getByLabel("Selling price").fill("9999.00");
   await expect(page.getByRole("status")).toContainText(/^(Over|Under) A\$/);

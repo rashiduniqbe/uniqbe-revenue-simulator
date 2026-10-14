@@ -14,13 +14,12 @@ const MARKET_TABS: { value: Market; label: string }[] = [
 
 export function MarketTabs({ market, onChange }: MarketTabsProps) {
   return (
-    <div className="flex gap-2" role="tablist" aria-label="Market">
+    <div className="flex gap-2" role="group" aria-label="Market">
       {MARKET_TABS.map((tab) => (
         <button
           key={tab.value}
           type="button"
-          role="tab"
-          aria-selected={market === tab.value}
+          aria-pressed={market === tab.value}
           className={
             market === tab.value
               ? "rounded-full border border-neutral-900 bg-neutral-900 min-h-11 px-4 text-sm text-white"
