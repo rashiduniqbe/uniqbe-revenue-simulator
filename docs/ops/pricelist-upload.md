@@ -88,6 +88,17 @@ answers that publishing is not configured.
 
 ## Known limits
 
+- **Correcting an uploaded list.** If a pull request for that date is already open, uploading a
+  corrected file does *not* update it: the page says so and links the existing pull request. Close that
+  pull request and delete its `pricelist/YYYYMMDD` branch on GitHub, then upload again.
+- **Turn on "Automatically delete head branches"** in the repository settings. A merged pull request
+  that leaves its branch behind blocks any later upload for the same date (the 409 above).
+- **Wait for the deploy before the next upload.** The preview compares against the catalogue baked
+  into the running deployment, not against `main`. If a merged price list has not finished deploying,
+  the date check and the diff are measured against the older list.
+- **Stricter build.** The workbook reader now stops with an error on a blank row that has data below
+  it, and reads formula cells by their displayed text. An old workbook with a stray blank row that built
+  before will fail `pnpm build` (via `catalogue:check`) until the blank row is removed.
 - There is no minimum item count. A list that loses most products shows up as a large *Removed*
   count in the preview and in the pull request, and review is the safeguard.
 - The pull request commits the workbook next to `catalogue.json`, so the existing "newest `.xlsx` in

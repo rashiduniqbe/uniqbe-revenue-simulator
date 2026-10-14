@@ -234,7 +234,7 @@ export function PricelistUploader() {
         {pr ? (
           <p className="rounded border border-green-700 bg-green-50 p-3 text-sm">
             {pr.alreadyExisted
-              ? "A pull request for this price list is already open: "
+              ? "A pull request for this date is already open, so this file was NOT applied. If you uploaded a corrected file, close that pull request and the branch on GitHub, then upload again: "
               : "Pull request created: "}
             <a href={pr.prUrl} className="font-medium underline" target="_blank" rel="noreferrer">
               #{pr.prNumber}

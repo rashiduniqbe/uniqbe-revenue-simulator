@@ -4,12 +4,11 @@ import { NextResponse } from "next/server";
 import { serializeCatalogue } from "../../../../../lib/catalogue-build";
 import { CURRENT_CATALOGUE } from "../../../../../lib/admin/current-catalogue";
 import {
+  CONFLICT,
   GithubError,
   createPricelistPr,
   readGithubConfig,
 } from "../../../../../lib/admin/github-pr";
-
-const CONFLICT = 409;
 import { requireAdminSession } from "../../../../../lib/admin/guard";
 import { formatPrDetails, summarizeDiff } from "../../../../../lib/admin/pr-body";
 import { previewPricelist } from "../../../../../lib/admin/pricelist-preview";
