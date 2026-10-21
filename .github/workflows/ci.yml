@@ -21,9 +21,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
+      # Before pnpm test: tests/e2e-target launches a real Chromium.
+      - run: pnpm e2e:install
       - run: pnpm test
       - run: pnpm catalogue:check
-      - run: pnpm e2e:install
       - run: pnpm e2e
         env:
           CI: "true"

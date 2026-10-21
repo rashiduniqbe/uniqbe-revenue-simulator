@@ -8,13 +8,18 @@ const CHUNKS = "**/_next/static/chunks/**";
 // Holds every Next.js JS chunk so the server-rendered page stays un-hydrated
 // while the test types, like a visitor on a slow phone. fallback() (not
 // continue()) keeps the target-header fixture in the chain on preview runs.
+// The handler stays registered after release: unrouting first would drop the
+// handler while its routes are still pending, and falling back on them then
+// races the fixture ("Route is already handled").
 async function holdHydration(page: Page): Promise<() => Promise<void>> {
   const held: Route[] = [];
+  let released = false;
   await page.route(CHUNKS, (route) => {
+    if (released) return route.fallback();
     held.push(route);
   });
   return async () => {
-    await page.unroute(CHUNKS);
+    released = true;
     await Promise.all(held.map((route) => route.fallback()));
   };
 }

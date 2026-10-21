@@ -13,9 +13,23 @@ export async function routeWithTargetHeaders(route: Route, target: E2ETarget): P
     await route.continue();
     return;
   }
-  const response = await route.fetch({
-    headers: { ...request.headers(), ...extra },
-    maxRedirects: 0,
-  });
-  await route.fulfill({ response });
+  try {
+    const response = await route.fetch({
+      headers: { ...request.headers(), ...extra },
+      maxRedirects: 0,
+    });
+    await route.fulfill({ response });
+  } catch (error) {
+    if (isRouteGone(error)) return;
+    throw error;
+  }
+}
+
+// The browser cancels in-flight requests on navigation and at teardown, so the
+// route can be gone before the target answers. Only that is ignored: a real
+// network failure still surfaces.
+const ROUTE_GONE = /already handled|has been disposed|Test ended|has been closed/i;
+
+function isRouteGone(error: unknown): boolean {
+  return error instanceof Error && ROUTE_GONE.test(error.message);
 }
