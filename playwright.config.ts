@@ -29,6 +29,13 @@ export default defineConfig({
         env: {
           NEXT_PUBLIC_POSTHOG_KEY: "phc_e2e_placeholder",
           NEXT_PUBLIC_POSTHOG_HOST: "http://127.0.0.1:3999",
+          // Admin flow (e2e/admin-upload.spec.ts) is opt-in via E2E_ADMIN_PASSWORD.
+          ...(process.env.E2E_ADMIN_PASSWORD
+            ? {
+                ADMIN_UPLOAD_PASSWORD: process.env.E2E_ADMIN_PASSWORD,
+                ADMIN_SESSION_SECRET: "e2e-only-session-secret-not-for-prod-0123456789",
+              }
+            : {}),
         },
       }
     : undefined,
