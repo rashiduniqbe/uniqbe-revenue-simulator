@@ -13,9 +13,14 @@ interface Stop {
   ringPx: number;
   overlapsSlot: boolean;
   overlapsNote: boolean;
+  // Injected by the hosting platform, not part of the app (see describeFocus).
+  isPlatformWidget: boolean;
 }
 
 // Describes the focused element, or null once focus has left the document.
+// Vercel injects a <vercel-live-feedback> comments widget into preview pages;
+// it is a real tab stop that the app neither owns nor styles, so walkFocus
+// steps over it rather than reporting it as a missing focus ring.
 function describeFocus(): Stop | null {
   const el = document.activeElement;
   if (!el || el === document.body) return null;
@@ -32,6 +37,7 @@ function describeFocus(): Stop | null {
     ringPx: parseFloat(style.outlineWidth),
     overlapsSlot: overlaps('[data-testid="verdict-slot"]'),
     overlapsNote: overlaps('[role="note"]'),
+    isPlatformWidget: el.tagName.toLowerCase() === "vercel-live-feedback",
   };
 }
 
@@ -61,7 +67,7 @@ async function walkFocus(
     const stop = await page.evaluate(describeFocus);
     if (stop === null || seen.has(stop.index)) return stops;
     seen.add(stop.index);
-    stops.push(stop);
+    if (!stop.isPlatformWidget) stops.push(stop);
   }
   throw new Error(`focus never left the page or looped back within ${MAX_TAB_STOPS} presses`);
 }
