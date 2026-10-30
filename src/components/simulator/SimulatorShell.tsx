@@ -17,10 +17,9 @@ import { BreakdownTable } from "./BreakdownTable";
 import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
-import { MarketTabs } from "./MarketTabs";
+import { PageHeader } from "./PageHeader";
 import { ThresholdBanner } from "./ThresholdBanner";
 import { CopyLinkButton } from "./CopyLinkButton";
-import { TEXT_LINK_CLASS } from "./control-classes";
 import { track } from "../../lib/analytics/client";
 import {
   calculationRun,
@@ -97,6 +96,9 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     });
   }
 
+  const compareHref = selectedItem
+    ? `/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`
+    : "/compare";
   const fxInput = fxInputFor(fx, market);
   // calculate() feeds these strings straight into `new Decimal(...)`, so an
   // empty, padded or malformed value would throw. resolveSimulationInput trims,
@@ -129,13 +131,13 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
-      <header className="border-b border-neutral-200 bg-white px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <h1 className="text-lg font-semibold">Uniqbe Price Simulator</h1>
-          <MarketTabs market={market} onChange={selectMarket} />
-        </div>
-        <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
-      </header>
+      <PageHeader
+        market={market}
+        onMarketChange={selectMarket}
+        priceListDate={catalogue.priceListDate}
+        fxBadge={<FxBadge rate={rate} currency={currency} asOf={fx.asOf} />}
+        compareHref={compareHref}
+      />
 
       <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:grid-rows-[auto_1fr] md:gap-x-6">
         {result && (
@@ -160,12 +162,6 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
           />
           {selectedItem && (
             <div className="flex flex-col gap-1">
-              <a
-                href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
-                className={TEXT_LINK_CLASS}
-              >
-                Compare UK vs Australia
-              </a>
               <CopyLinkButton />
             </div>
           )}

@@ -50,3 +50,14 @@ test("no Redis in CI: seed rates render with the degraded warning", async ({ pag
   await page.getByLabel("Selling price").fill("9999.00");
   await expect(page.getByText("This exchange rate is more than a few days old.")).toBeVisible();
 });
+
+test("header shows title, market tabs, compare link and price-list date", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Uniqbe Price Simulator" }),
+  ).toBeVisible();
+  // MarketTabs is a labelled button group (aria-pressed), which existing a11y specs rely on.
+  await expect(page.getByRole("group", { name: "Market" })).toBeVisible();
+  await expect(page.locator('a[href^="/compare"]').first()).toBeVisible();
+  await expect(page.getByText(/Up-to-date as of/)).toBeVisible();
+});
