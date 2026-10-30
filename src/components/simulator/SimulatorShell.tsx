@@ -17,6 +17,7 @@ import { BreakdownTable } from "./BreakdownTable";
 import { VerdictCard } from "./VerdictCard";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
+import { CalculatorCard } from "./CalculatorCard";
 import { PageHeader } from "./PageHeader";
 import { ThresholdBanner } from "./ThresholdBanner";
 import { CopyLinkButton } from "./CopyLinkButton";
@@ -139,11 +140,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
         compareHref={compareHref}
       />
 
-      <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:grid-rows-[auto_1fr] md:gap-x-6">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6">
         {result && (
           <div
             data-testid="verdict-slot"
-            className="sticky top-0 z-10 -mx-4 bg-[#FAFAF9] px-4 py-2 md:static md:col-start-2 md:row-start-1 md:mx-0 md:bg-transparent md:p-0"
+            className="sticky top-0 z-10 -mx-4 bg-[#FAFAF9] px-4 py-2 md:static md:mx-0 md:bg-transparent md:p-0"
           >
             <VerdictCard
               verdict={result.verdict}
@@ -154,7 +155,7 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
           </div>
         )}
 
-        <section className="flex flex-col gap-4 md:col-start-1 md:row-span-2 md:row-start-1">
+        <CalculatorCard>
           <ProductPicker
             items={catalogue.items}
             selectedCode={scenario.productCode}
@@ -180,11 +181,9 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
               onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
             />
           )}
-        </section>
+        </CalculatorCard>
 
-        <section
-          className={`flex flex-col gap-4 md:col-start-2 ${result ? "md:row-start-2" : "md:row-start-1"}`}
-        >
+        <section className="flex flex-col gap-4">
           {result ? (
             <>
               {result.auAboveThreshold !== null && rules.AU.deMinimisLocal !== null && (
