@@ -26,7 +26,7 @@ test("mobile: verdict card stays pinned to the top while the inputs scroll", asy
   await expect(slot.getByText(VERDICT)).toBeInViewport({ ratio: 1 });
 });
 
-test("desktop: verdict sits above the calculator card and is not sticky", async ({
+test("desktop: result block closes the calculator card, below the inputs, and is not sticky", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "desktop-only check");
@@ -38,16 +38,19 @@ test("desktop: verdict sits above the calculator card and is not sticky", async 
   expect(await slot.evaluate((el) => getComputedStyle(el).position)).toBe("static");
   const slotBox = await slot.boundingBox();
   const inputBox = await page.getByRole("textbox", { name: "Selling price" }).boundingBox();
-  expect(slotBox!.y).toBeLessThan(inputBox!.y);
+  expect(slotBox!.y).toBeGreaterThan(inputBox!.y);
 
-  // The verdict is the first thing in the single column: above the waterfall and the
-  // breakdown table, and left-aligned with them.
+  // The result ends the card, so it is still above the waterfall and the
+  // breakdown table,
   const waterfallBox = await page.getByRole("img", { name: /Cost waterfall/ }).boundingBox();
   const tableBox = await page.getByRole("table").boundingBox();
   expect(slotBox!.y).toBeLessThan(waterfallBox!.y);
   expect(slotBox!.y).toBeLessThan(tableBox!.y);
-  expect(Math.abs(slotBox!.x - waterfallBox!.x)).toBeLessThanOrEqual(2);
-  expect(Math.abs(slotBox!.x - tableBox!.x)).toBeLessThanOrEqual(2);
+  // It now lives inside the card, so it is contained by the card rather than aligned to the
+  // column edge the waterfall and table share.
+  const cardBox = await page.getByTestId("calculator-card").boundingBox();
+  expect(slotBox!.x).toBeGreaterThanOrEqual(cardBox!.x);
+  expect(slotBox!.x + slotBox!.width).toBeLessThanOrEqual(cardBox!.x + cardBox!.width + 1);
 });
 
 test("card grid has no horizontal scroll at 320px", async ({ page }) => {

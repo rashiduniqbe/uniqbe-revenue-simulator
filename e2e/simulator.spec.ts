@@ -61,3 +61,38 @@ test("header shows title, market tabs, compare link and price-list date", async 
   await expect(page.locator('a[href^="/compare"]').first()).toBeVisible();
   await expect(page.getByText(/Up-to-date as of/)).toBeVisible();
 });
+
+test("empty price shows dashes not NaN", async ({ page }) => {
+  await page.goto("/");
+  await pickFirstProduct(page);
+  const block = page.getByTestId("result-block");
+  await expect(block).toContainText("—");
+  await expect(block.getByRole("button", { name: "Reset calculator" })).toBeEnabled();
+  expect(await page.locator("body").innerText()).not.toMatch(/NaN|Infinity/);
+});
+
+test("reset clears inputs and keeps market", async ({ page }) => {
+  await page.goto("/");
+  await pickFirstProduct(page);
+  await page.getByRole("button", { name: /Australia/ }).click();
+  await expect(page).toHaveURL(/m=AU/);
+  await page.locator("#selling-price").fill("9999.00");
+  await expect(page.getByText(VERDICT)).toBeVisible();
+  await page.getByRole("button", { name: "Reset calculator" }).click();
+  await expect(page.locator("#selling-price")).toHaveValue("");
+  await expect(page.getByRole("button", { name: /Australia/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByTestId("result-block")).toContainText("In AUD.");
+});
+
+test("loss-making result shows negative profit with verdict text", async ({ page }) => {
+  await page.goto("/");
+  await pickFirstProduct(page);
+  await page.locator("#selling-price").fill("0.01");
+  const block = page.getByTestId("result-block");
+  await expect(block.getByText("LOSS-MAKING")).toBeVisible();
+  await expect(block.getByTestId("net-profit")).toContainText("-");
+  expect(await page.locator("body").innerText()).not.toMatch(/NaN|Infinity/);
+});

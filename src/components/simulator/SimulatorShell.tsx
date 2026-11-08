@@ -7,6 +7,7 @@ import { resolveSimulationInput } from "../../lib/simulate-input";
 import { calculate } from "../../engine";
 import type { Market } from "../../engine/types";
 import { fxInputFor } from "../../lib/compare";
+import { toResultHeadline } from "../../lib/result-headline";
 import { deriveDutyPctDefault, deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
@@ -14,7 +15,7 @@ import { ProductPicker } from "./ProductPicker";
 import { InputPanel } from "./InputPanel";
 import { PriceSuggestion } from "./PriceSuggestion";
 import { BreakdownTable } from "./BreakdownTable";
-import { VerdictCard } from "./VerdictCard";
+import { ResultBlock } from "./ResultBlock";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
 import { CalculatorCard } from "./CalculatorCard";
@@ -97,6 +98,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     });
   }
 
+  // Back to the empty scenario, keeping the market the partner is looking at.
+  function resetCalculator() {
+    setScenario({ ...DEFAULT_SCENARIO, market });
+  }
+
   const compareHref = selectedItem
     ? `/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`
     : "/compare";
@@ -141,20 +147,6 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
       />
 
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6">
-        {result && (
-          <div
-            data-testid="verdict-slot"
-            className="sticky top-0 z-10 -mx-4 bg-[#FAFAF9] px-4 py-2 md:static md:mx-0 md:bg-transparent md:p-0"
-          >
-            <VerdictCard
-              verdict={result.verdict}
-              netProfit={result.netProfit}
-              marginPct={result.marginPct}
-              currency={result.currency}
-            />
-          </div>
-        )}
-
         <CalculatorCard>
           <ProductPicker
             items={catalogue.items}
@@ -181,6 +173,11 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
               onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
             />
           )}
+          <ResultBlock
+            headline={toResultHeadline(result)}
+            currency={currency}
+            onReset={resetCalculator}
+          />
         </CalculatorCard>
 
         <section className="flex flex-col gap-4">
