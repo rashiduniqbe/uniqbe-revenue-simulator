@@ -14,6 +14,9 @@ interface InputPanelProps {
   category: CategorySlugType | null;
 }
 
+const LABEL_CLASS = "text-sm font-medium";
+const CHECKBOX_ROW_CLASS = "flex min-h-11 items-center justify-center gap-2 text-sm sm:col-span-2";
+
 export function InputPanel({ scenario, onChange, rules, category }: InputPanelProps) {
   const marketRules = rules[scenario.market];
   const textRefs = {
@@ -64,14 +67,70 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div>
-        <label htmlFor="platform" className="text-sm font-medium">
+    <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="selling-price" className={LABEL_CLASS}>
+          Selling price
+        </label>
+        <input
+          id="selling-price"
+          ref={textRefs.sellingPriceLocal}
+          type="text"
+          inputMode="decimal"
+          className={`${MONO_INPUT_CLASS} text-center`}
+          value={scenario.sellingPriceLocal}
+          onChange={(event) => set("sellingPriceLocal", event.target.value)}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="shipping" className={LABEL_CLASS}>
+          Shipping
+        </label>
+        <input
+          id="shipping"
+          ref={textRefs.inboundShippingLocal}
+          type="text"
+          inputMode="decimal"
+          className={`${MONO_INPUT_CLASS} text-center`}
+          value={scenario.inboundShippingLocal}
+          onChange={(event) => set("inboundShippingLocal", event.target.value)}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="packaging" className={LABEL_CLASS}>
+          Packaging
+        </label>
+        <input
+          id="packaging"
+          ref={textRefs.packagingLocal}
+          type="text"
+          inputMode="decimal"
+          className={`${MONO_INPUT_CLASS} text-center`}
+          value={scenario.packagingLocal}
+          onChange={(event) => set("packagingLocal", event.target.value)}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="duty-pct" className={LABEL_CLASS}>
+          Duty %
+        </label>
+        <input
+          id="duty-pct"
+          ref={textRefs.dutyPct}
+          type="text"
+          inputMode="decimal"
+          className={`${MONO_INPUT_CLASS} text-center`}
+          value={scenario.dutyPct}
+          onChange={(event) => set("dutyPct", event.target.value)}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="platform" className={LABEL_CLASS}>
           Platform
         </label>
         <select
           id="platform"
-          className={TEXT_INPUT_CLASS}
+          className={`${TEXT_INPUT_CLASS} text-center`}
           value={scenario.platform}
           onChange={(event) => onPlatformChange(event.target.value as ScenarioParams["platform"])}
         >
@@ -81,8 +140,37 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           <option value="other">Other</option>
         </select>
       </div>
-
-      <label className="flex min-h-11 items-center gap-2 text-sm">
+      <div className="flex min-w-0 flex-col gap-1 text-center">
+        <label htmlFor="referral-fee-pct" className={LABEL_CLASS}>
+          Referral fee %
+        </label>
+        <input
+          id="referral-fee-pct"
+          ref={textRefs.referralFeePct}
+          type="text"
+          inputMode="decimal"
+          className={`${MONO_INPUT_CLASS} text-center`}
+          value={scenario.referralFeePct}
+          onChange={(event) => set("referralFeePct", event.target.value)}
+        />
+      </div>
+      {scenario.platform === "shopify" && (
+        <div className="flex min-w-0 flex-col gap-1 text-center">
+          <label htmlFor="ad-spend" className={LABEL_CLASS}>
+            Ad spend
+          </label>
+          <input
+            id="ad-spend"
+            ref={textRefs.adSpendLocal}
+            type="text"
+            inputMode="decimal"
+            className={`${MONO_INPUT_CLASS} text-center`}
+            value={scenario.adSpendLocal}
+            onChange={(event) => set("adSpendLocal", event.target.value)}
+          />
+        </div>
+      )}
+      <label className={CHECKBOX_ROW_CLASS}>
         <input
           type="checkbox"
           className="size-5"
@@ -91,71 +179,8 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
         />
         {marketRules.consumptionTaxName}-registered?
       </label>
-
-      <div>
-        <label htmlFor="selling-price" className="text-sm font-medium">
-          Selling price
-        </label>
-        <input
-          id="selling-price"
-          ref={textRefs.sellingPriceLocal}
-          type="text"
-          inputMode="decimal"
-          className={MONO_INPUT_CLASS}
-          value={scenario.sellingPriceLocal}
-          onChange={(event) => set("sellingPriceLocal", event.target.value)}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="shipping" className="text-sm font-medium">
-          Shipping
-        </label>
-        <input
-          id="shipping"
-          ref={textRefs.inboundShippingLocal}
-          type="text"
-          inputMode="decimal"
-          className={MONO_INPUT_CLASS}
-          value={scenario.inboundShippingLocal}
-          onChange={(event) => set("inboundShippingLocal", event.target.value)}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="packaging" className="text-sm font-medium">
-          Packaging
-        </label>
-        <input
-          id="packaging"
-          ref={textRefs.packagingLocal}
-          type="text"
-          inputMode="decimal"
-          className={MONO_INPUT_CLASS}
-          value={scenario.packagingLocal}
-          onChange={(event) => set("packagingLocal", event.target.value)}
-        />
-      </div>
-
-      {scenario.platform === "shopify" && (
-        <div>
-          <label htmlFor="ad-spend" className="text-sm font-medium">
-            Ad spend
-          </label>
-          <input
-            id="ad-spend"
-            ref={textRefs.adSpendLocal}
-            type="text"
-            inputMode="decimal"
-            className={MONO_INPUT_CLASS}
-            value={scenario.adSpendLocal}
-            onChange={(event) => set("adSpendLocal", event.target.value)}
-          />
-        </div>
-      )}
-
       {scenario.market === "AU" && scenario.platform === "ebay" && (
-        <label className="flex min-h-11 items-center gap-2 text-sm">
+        <label className={CHECKBOX_ROW_CLASS}>
           <input
             type="checkbox"
             className="size-5"
@@ -165,9 +190,8 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           eBay free tier (trailing sales ≤ A$25,000)?
         </label>
       )}
-
       {scenario.market === "AU" && scenario.platform === "shopify" && (
-        <label className="flex min-h-11 items-center gap-2 text-sm">
+        <label className={CHECKBOX_ROW_CLASS}>
           <input
             type="checkbox"
             className="size-5"
@@ -177,36 +201,6 @@ export function InputPanel({ scenario, onChange, rules, category }: InputPanelPr
           Have an ABN on file?
         </label>
       )}
-
-      <div>
-        <label htmlFor="duty-pct" className="text-sm font-medium">
-          Duty %
-        </label>
-        <input
-          id="duty-pct"
-          ref={textRefs.dutyPct}
-          type="text"
-          inputMode="decimal"
-          className={MONO_INPUT_CLASS}
-          value={scenario.dutyPct}
-          onChange={(event) => set("dutyPct", event.target.value)}
-        />
-      </div>
-
-      <div>
-        <label htmlFor="referral-fee-pct" className="text-sm font-medium">
-          Referral fee %
-        </label>
-        <input
-          id="referral-fee-pct"
-          ref={textRefs.referralFeePct}
-          type="text"
-          inputMode="decimal"
-          className={MONO_INPUT_CLASS}
-          value={scenario.referralFeePct}
-          onChange={(event) => set("referralFeePct", event.target.value)}
-        />
-      </div>
     </div>
   );
 }

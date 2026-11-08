@@ -7,6 +7,7 @@ import { resolveSimulationInput } from "../../lib/simulate-input";
 import { calculate } from "../../engine";
 import type { Market } from "../../engine/types";
 import { fxInputFor } from "../../lib/compare";
+import { toResultHeadline } from "../../lib/result-headline";
 import { deriveDutyPctDefault, deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { FxBadge } from "./FxBadge";
 import { DisclaimerBar } from "./DisclaimerBar";
@@ -14,13 +15,13 @@ import { ProductPicker } from "./ProductPicker";
 import { InputPanel } from "./InputPanel";
 import { PriceSuggestion } from "./PriceSuggestion";
 import { BreakdownTable } from "./BreakdownTable";
-import { VerdictCard } from "./VerdictCard";
+import { ResultBlock } from "./ResultBlock";
 import { CostWaterfall } from "./CostWaterfall";
 import { WarningList } from "./WarningList";
-import { MarketTabs } from "./MarketTabs";
+import { CalculatorCard } from "./CalculatorCard";
+import { PageHeader } from "./PageHeader";
 import { ThresholdBanner } from "./ThresholdBanner";
 import { CopyLinkButton } from "./CopyLinkButton";
-import { TEXT_LINK_CLASS } from "./control-classes";
 import { track } from "../../lib/analytics/client";
 import {
   calculationRun,
@@ -97,6 +98,14 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
     });
   }
 
+  // Back to the empty scenario, keeping the market the partner is looking at.
+  function resetCalculator() {
+    setScenario({ ...DEFAULT_SCENARIO, market });
+  }
+
+  const compareHref = selectedItem
+    ? `/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`
+    : "/compare";
   const fxInput = fxInputFor(fx, market);
   // calculate() feeds these strings straight into `new Decimal(...)`, so an
   // empty, padded or malformed value would throw. resolveSimulationInput trims,
@@ -129,30 +138,16 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">
-      <header className="border-b border-neutral-200 bg-white px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <h1 className="text-lg font-semibold">Uniqbe Price Simulator</h1>
-          <MarketTabs market={market} onChange={selectMarket} />
-        </div>
-        <FxBadge rate={rate} currency={currency} asOf={fx.asOf} />
-      </header>
+      <PageHeader
+        market={market}
+        onMarketChange={selectMarket}
+        priceListDate={catalogue.priceListDate}
+        fxBadge={<FxBadge rate={rate} currency={currency} asOf={fx.asOf} />}
+        compareHref={compareHref}
+      />
 
-      <main className="flex flex-1 flex-col gap-4 px-4 py-6 md:grid md:grid-cols-[20rem_1fr] md:grid-rows-[auto_1fr] md:gap-x-6">
-        {result && (
-          <div
-            data-testid="verdict-slot"
-            className="sticky top-0 z-10 -mx-4 bg-[#FAFAF9] px-4 py-2 md:static md:col-start-2 md:row-start-1 md:mx-0 md:bg-transparent md:p-0"
-          >
-            <VerdictCard
-              verdict={result.verdict}
-              netProfit={result.netProfit}
-              marginPct={result.marginPct}
-              currency={result.currency}
-            />
-          </div>
-        )}
-
-        <section className="flex flex-col gap-4 md:col-start-1 md:row-span-2 md:row-start-1">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6">
+        <CalculatorCard>
           <ProductPicker
             items={catalogue.items}
             selectedCode={scenario.productCode}
@@ -160,12 +155,6 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
           />
           {selectedItem && (
             <div className="flex flex-col gap-1">
-              <a
-                href={`/compare?p=${encodeURIComponent(selectedItem.code)}&pl=${scenario.platform}`}
-                className={TEXT_LINK_CLASS}
-              >
-                Compare UK vs Australia
-              </a>
               <CopyLinkButton />
             </div>
           )}
@@ -175,20 +164,29 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             rules={rules}
             category={selectedItem?.category ?? null}
           />
-          {selectedItem && suggestionInput && (
-            <PriceSuggestion
-              input={suggestionInput}
-              fx={fxInput}
-              rules={rules}
-              disabled={!selectedItem}
-              onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
-            />
-          )}
-        </section>
+          <ResultBlock
+            headline={toResultHeadline(result)}
+            currency={currency}
+            onReset={resetCalculator}
+          />
+          {/* Supplements the sticky DisclaimerBar; never a replacement for it. md:order-last
+              keeps it after the result block, which also moves to the end of the card on md+. */}
+          <p className="text-center text-xs text-neutral-600 md:order-last">
+            Estimate only. Final price confirmed on Uniqbe&rsquo;s invoice.
+          </p>
+        </CalculatorCard>
 
-        <section
-          className={`flex flex-col gap-4 md:col-start-2 ${result ? "md:row-start-2" : "md:row-start-1"}`}
-        >
+        {selectedItem && suggestionInput && (
+          <PriceSuggestion
+            input={suggestionInput}
+            fx={fxInput}
+            rules={rules}
+            disabled={!selectedItem}
+            onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
+          />
+        )}
+
+        <section className="flex flex-col gap-4">
           {result ? (
             <>
               {result.auAboveThreshold !== null && rules.AU.deMinimisLocal !== null && (
