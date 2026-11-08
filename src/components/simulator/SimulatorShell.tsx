@@ -164,21 +164,27 @@ export function SimulatorShell({ catalogue, rules, fx }: SimulatorShellProps) {
             rules={rules}
             category={selectedItem?.category ?? null}
           />
-          {selectedItem && suggestionInput && (
-            <PriceSuggestion
-              input={suggestionInput}
-              fx={fxInput}
-              rules={rules}
-              disabled={!selectedItem}
-              onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
-            />
-          )}
           <ResultBlock
             headline={toResultHeadline(result)}
             currency={currency}
             onReset={resetCalculator}
           />
+          {/* Supplements the sticky DisclaimerBar; never a replacement for it. md:order-last
+              keeps it after the result block, which also moves to the end of the card on md+. */}
+          <p className="text-center text-xs text-neutral-600 md:order-last">
+            Estimate only. Final price confirmed on Uniqbe&rsquo;s invoice.
+          </p>
         </CalculatorCard>
+
+        {selectedItem && suggestionInput && (
+          <PriceSuggestion
+            input={suggestionInput}
+            fx={fxInput}
+            rules={rules}
+            disabled={!selectedItem}
+            onApply={(price) => setScenario({ ...scenario, sellingPriceLocal: price })}
+          />
+        )}
 
         <section className="flex flex-col gap-4">
           {result ? (

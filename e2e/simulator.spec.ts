@@ -96,3 +96,39 @@ test("loss-making result shows negative profit with verdict text", async ({ page
   await expect(block.getByTestId("net-profit")).toContainText("-");
   expect(await page.locator("body").innerText()).not.toMatch(/NaN|Infinity/);
 });
+
+test("card ends with an invoice footnote that supplements the disclaimer bar", async ({ page }) => {
+  await page.goto("/");
+  await pickFirstProduct(page);
+  await page.locator("#selling-price").fill("9999.00");
+  const card = page.getByTestId("calculator-card");
+  const footnote = card.getByText(/^Estimate only\. Final price confirmed on Uniqbe.s invoice\.$/);
+  await expect(footnote).toBeVisible();
+  // The footnote closes the card: below the Reset button on every viewport.
+  const footnoteBox = await footnote.boundingBox();
+  const resetBox = await card.getByRole("button", { name: "Reset calculator" }).boundingBox();
+  expect(footnoteBox!.y).toBeGreaterThan(resetBox!.y);
+  // It adds to the sticky disclaimer, never replaces it.
+  await expectFxAndDisclaimer(page);
+  await expect(page.getByRole("note")).toHaveCount(1);
+});
+
+test("price suggestion and breakdown sit beneath the card", async ({ page }) => {
+  await page.goto("/");
+  await pickFirstProduct(page);
+  await page.locator("#selling-price").fill("9999.00");
+  await expect(page.getByText(VERDICT).first()).toBeVisible();
+  const card = page.getByTestId("calculator-card");
+  const suggestion = page.getByLabel("Suggest a price for a target margin");
+  const waterfall = page.getByRole("img", { name: /Cost waterfall/ });
+  const table = page.getByRole("table");
+  await expect(suggestion).toBeVisible();
+  for (const locator of [suggestion, waterfall, table]) {
+    await expect(card.locator(locator)).toHaveCount(0);
+  }
+  const cardBox = await card.boundingBox();
+  const cardBottom = cardBox!.y + cardBox!.height;
+  for (const locator of [suggestion, waterfall, table]) {
+    expect((await locator.boundingBox())!.y).toBeGreaterThanOrEqual(cardBottom);
+  }
+});
