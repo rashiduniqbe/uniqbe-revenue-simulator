@@ -3,7 +3,7 @@ import { VERDICT } from "./a11y-helpers";
 import { firstCatalogueItem } from "./helpers";
 
 test("no verdict slot until there is a result", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await expect(page.getByText("Select a product and enter a selling price")).toBeVisible();
   await expect(page.getByTestId("verdict-slot")).toHaveCount(0);
 });
@@ -13,7 +13,7 @@ test("mobile: verdict card stays pinned to the top while the inputs scroll", asy
 }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-portrait", "mobile-only check");
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   const slot = page.getByTestId("verdict-slot");
   await expect(slot.getByText(VERDICT)).toBeVisible();
 
@@ -31,7 +31,7 @@ test("desktop: result block closes the calculator card, below the inputs, and is
 }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "desktop-only check");
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   const slot = page.getByTestId("verdict-slot");
   await expect(slot.getByText(VERDICT)).toBeVisible();
 
@@ -56,7 +56,7 @@ test("desktop: result block closes the calculator card, below the inputs, and is
 test("card grid has no horizontal scroll at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   await expect(page.getByTestId("calculator-card")).toBeVisible();
   const overflow = await page.evaluate(() => {
     const root = document.documentElement;
@@ -66,7 +66,7 @@ test("card grid has no horizontal scroll at 320px", async ({ page }) => {
 });
 
 test("inputs live inside the calculator card", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   const card = page.getByTestId("calculator-card");
   await expect(card.locator("#selling-price")).toHaveCount(1);
   await expect(card.locator("#platform")).toHaveCount(1);

@@ -1,4 +1,4 @@
-import { FxRawSnapshot, hkdRate, type FxRawSnapshotType } from "../../lib/schemas";
+import { FxRawSnapshot, type FxRawSnapshotType } from "../../lib/schemas";
 
 const DEFAULT_FRANKFURTER_URL = "https://api.frankfurter.dev/v1/latest";
 
@@ -11,7 +11,7 @@ export async function fetchFrankfurterSnapshot(
   fetchImpl: typeof fetch = fetch,
   baseUrl: string = process.env.FX_PRIMARY_URL ?? DEFAULT_FRANKFURTER_URL,
 ): Promise<FxRawSnapshotType> {
-  const url = `${baseUrl}?from=USD&to=GBP,AUD,HKD`;
+  const url = `${baseUrl}?from=USD&to=GBP,AUD`;
   const response = await fetchImpl(url);
   if (!response.ok) {
     throw new Error(`Frankfurter request failed: ${response.status}`);
@@ -24,7 +24,7 @@ export async function fetchFrankfurterSnapshot(
   }
   return FxRawSnapshot.parse({
     base: "USD",
-    rates: { GBP: gbp, AUD: aud, ...hkdRate(body.rates) },
+    rates: { GBP: gbp, AUD: aud },
     asOf: body.date,
     fetchedAt: new Date().toISOString(),
     provider: "frankfurter",

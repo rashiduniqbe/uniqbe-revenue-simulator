@@ -139,15 +139,10 @@ export const MarketRules = z.object({
 });
 export type MarketRulesType = z.infer<typeof MarketRules>;
 
-// HKD is display-only (the AU prototype's result toggle) and optional so
-// snapshots written before it was fetched still parse.
-const FxRates = z.object({ GBP: z.number(), AUD: z.number(), HKD: z.number().optional() });
-
-/** The `{ HKD }` part of a provider's rates, or nothing when the provider omitted it. */
-export function hkdRate(rates: Record<string, number | undefined>): { HKD?: number } {
-  const hkd = rates.HKD;
-  return typeof hkd === "number" ? { HKD: hkd } : {};
-}
+// HKD is not fetched: the calculator uses a fixed rate (FIXED_HKD_PER_USD in
+// lib/display-currency.ts). An older snapshot with an HKD key still parses —
+// zod drops unknown keys.
+const FxRates = z.object({ GBP: z.number(), AUD: z.number() });
 
 export const FxSnapshot = z.object({
   base: z.literal("USD"),

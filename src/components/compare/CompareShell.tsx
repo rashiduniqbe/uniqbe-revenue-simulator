@@ -51,7 +51,8 @@ export function CompareShell({ catalogue, rules, fx }: CompareShellProps) {
 
   const backParams = new URLSearchParams({ pl: params.pl });
   if (params.p) backParams.set("p", params.p);
-  const backHref = `/?${backParams.toString()}`;
+  // The UK/AU simulator lives at /uk since the AU calculator became "/".
+  const backHref = `/uk?${backParams.toString()}`;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FAFAF9]">

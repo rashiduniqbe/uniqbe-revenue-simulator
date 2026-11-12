@@ -80,7 +80,7 @@ function hiddenBehindBars(stops: Stop[]): string[] {
 
 test("every keyboard focus stop shows a ring of at least 2px", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   const stops = await walkFocus(page, "Tab");
   expect(stops.length, "the page has focusable controls").toBeGreaterThan(5);
   const weak = stops
@@ -92,7 +92,7 @@ test("every keyboard focus stop shows a ring of at least 2px", async ({ page }) 
 // Walks the whole page forwards and backwards in the marginal state (the tallest sticky verdict
 // card) and fails on any stop that sits under the sticky verdict card or the disclaimer bar.
 async function expectFocusClearOfStickyBars(page: Page): Promise<void> {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
   await reachMarginalVerdict(page);
@@ -135,7 +135,7 @@ test("mobile: focus stays clear of the taller verdict card at 320px", async ({
 // its edges. The row must draw its ring inside its own box, which sits inside the list box.
 test("product result rows draw an inset focus ring that the list cannot clip", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto("/");
+  await page.goto("/uk");
   await page.locator("#product-search").fill(item.name);
   await page.locator("#product-search").press("Tab");
   const ring = await page.evaluate(() => {

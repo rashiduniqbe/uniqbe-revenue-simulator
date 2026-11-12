@@ -22,11 +22,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "AU dropship calculator (prototype) · Uniqbe",
-  robots: { index: false, follow: false },
+  title: "Dropship Revenue Calculator · Uniqbe",
+  description:
+    "Profit calculator for Uniqbe dropship partners selling into Australia, priced live from the Uniqbe dropship price list.",
 };
 
-export default function PrototypeLayout({ children }: { children: ReactNode }) {
+// Route group for "/": loads the box-converter fonts for the AU calculator only.
+export default function AuLayout({ children }: { children: ReactNode }) {
   return (
     <div className={`${barlow.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable}`}>
       {children}

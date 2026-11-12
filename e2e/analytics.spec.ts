@@ -12,7 +12,7 @@ const FLUSH_TIMEOUT_MS = 15_000;
 test("simulator_viewed is sent, with no pageview and no price anywhere", async ({ page }) => {
   const requests = await captureAnalytics(page);
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   await expect
     .poll(() => requests.join("\n"), { timeout: FLUSH_TIMEOUT_MS })
     .toContain("simulator_viewed");
@@ -27,7 +27,7 @@ test("typing a price sends exactly one calculation_run, with a band and no price
   page,
 }) => {
   const requests = await captureAnalytics(page);
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page
     .getByRole("textbox", { name: "Selling price" })
@@ -49,7 +49,7 @@ test("typing a price sends exactly one calculation_run, with a band and no price
 
 test("Suggest sends price_suggested with a banded target", async ({ page }) => {
   const requests = await captureAnalytics(page);
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("button", { name: "Suggest" }).click();
   await expect
@@ -73,7 +73,7 @@ test("/compare sends comparison_viewed and no price", async ({ page }) => {
 test("Copy link copies the scenario URL and sends scenario_shared", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const requests = await captureAnalytics(page);
-  await page.goto("/");
+  await page.goto("/uk");
   const item = await pickFirstProduct(page);
   await page.getByRole("button", { name: "Copy link" }).click();
   await expect(page.getByText("Link copied")).toBeVisible();
@@ -88,7 +88,7 @@ test("two settled prices with the same verdict and band count as two calculation
   page,
 }) => {
   const requests = await captureAnalytics(page);
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   const price = page.getByRole("textbox", { name: "Selling price" });
   await price.fill("9999.00");

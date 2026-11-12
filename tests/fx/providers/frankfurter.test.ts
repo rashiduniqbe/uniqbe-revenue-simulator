@@ -28,24 +28,18 @@ describe("fetchFrankfurterSnapshot", () => {
     expect(new Date(snapshot.fetchedAt).toString()).not.toBe("Invalid Date");
   });
 
-  it("calls the given base URL with from=USD&to=GBP,AUD,HKD", async () => {
+  it("calls the given base URL with from=USD&to=GBP,AUD", async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: () => Promise.resolve({ date: "2026-08-25", rates: { GBP: 0.74, AUD: 1.4 } }),
     }) as unknown as typeof fetch;
     await fetchFrankfurterSnapshot(fetchImpl, "https://example.test/latest");
-    expect(fetchImpl).toHaveBeenCalledWith("https://example.test/latest?from=USD&to=GBP,AUD,HKD");
+    expect(fetchImpl).toHaveBeenCalledWith("https://example.test/latest?from=USD&to=GBP,AUD");
   });
 
-  it("keeps the HKD display rate when the response carries one", async () => {
+  it("ignores any other rate in the response (HKD is a fixed rate, not fetched)", async () => {
     const fetchImpl = mockFetch({ date: "2026-08-25", rates: { GBP: 0.74, AUD: 1.4, HKD: 7.8 } });
-    const snapshot = await fetchFrankfurterSnapshot(fetchImpl, "https://example.test/latest");
-    expect(snapshot.rates).toEqual({ GBP: 0.74, AUD: 1.4, HKD: 7.8 });
-  });
-
-  it("omits HKD rather than failing when the response has no HKD rate", async () => {
-    const fetchImpl = mockFetch({ date: "2026-08-25", rates: { GBP: 0.74, AUD: 1.4 } });
     const snapshot = await fetchFrankfurterSnapshot(fetchImpl, "https://example.test/latest");
     expect(snapshot.rates).toEqual({ GBP: 0.74, AUD: 1.4 });
   });
