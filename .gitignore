@@ -38,3 +38,6 @@ Thumbs.db
 
 # git worktrees (scratch, not part of history)
 .worktrees/
+
+.vercel
+.env*
