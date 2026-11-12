@@ -5,7 +5,7 @@ import { isAgainstDeployment } from "./target";
 const VERDICT = /PROFITABLE|MARGINAL|LOSS-MAKING/;
 
 test("UK: pick product -> enter price -> see verdict", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await expectFxAndDisclaimer(page);
   await pickFirstProduct(page);
   await page.getByLabel("Selling price").fill("9999.00");
@@ -14,7 +14,7 @@ test("UK: pick product -> enter price -> see verdict", async ({ page }) => {
 });
 
 test("AU: switch market -> threshold banner -> eBay free-tier toggle", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("button", { name: /Australia/ }).click();
   await expect(page).toHaveURL(/m=AU/);
@@ -26,7 +26,7 @@ test("AU: switch market -> threshold banner -> eBay free-tier toggle", async ({ 
 });
 
 test("URL state: reload restores the scenario and back works", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   const item = await pickFirstProduct(page);
   await page.getByLabel("Selling price").fill("9999.00");
   await expect(page).toHaveURL(new RegExp(`p=${item.code}`));
@@ -45,14 +45,14 @@ test("no Redis in CI: seed rates render with the degraded warning", async ({ pag
     !process.env.CI || isAgainstDeployment(),
     "needs the no-Redis local CI build; locally .env.local or a deployment has real Redis",
   );
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByLabel("Selling price").fill("9999.00");
   await expect(page.getByText("This exchange rate is more than a few days old.")).toBeVisible();
 });
 
 test("header shows title, market tabs, compare link and price-list date", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await expect(
     page.getByRole("heading", { level: 1, name: "Uniqbe Price Simulator" }),
   ).toBeVisible();
@@ -63,7 +63,7 @@ test("header shows title, market tabs, compare link and price-list date", async 
 });
 
 test("empty price shows dashes not NaN", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   const block = page.getByTestId("result-block");
   await expect(block).toContainText("—");
@@ -72,7 +72,7 @@ test("empty price shows dashes not NaN", async ({ page }) => {
 });
 
 test("reset clears inputs and keeps market", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("button", { name: /Australia/ }).click();
   await expect(page).toHaveURL(/m=AU/);
@@ -88,7 +88,7 @@ test("reset clears inputs and keeps market", async ({ page }) => {
 });
 
 test("loss-making result shows negative profit with verdict text", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.locator("#selling-price").fill("0.01");
   const block = page.getByTestId("result-block");
@@ -98,7 +98,7 @@ test("loss-making result shows negative profit with verdict text", async ({ page
 });
 
 test("card ends with an invoice footnote that supplements the disclaimer bar", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.locator("#selling-price").fill("9999.00");
   const card = page.getByTestId("calculator-card");
@@ -114,7 +114,7 @@ test("card ends with an invoice footnote that supplements the disclaimer bar", a
 });
 
 test("price suggestion and breakdown sit beneath the card", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.locator("#selling-price").fill("9999.00");
   await expect(page.getByText(VERDICT).first()).toBeVisible();

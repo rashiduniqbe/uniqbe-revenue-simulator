@@ -48,7 +48,7 @@ const STATES: AxeState[] = [
 for (const state of STATES) {
   test(`axe: ${state.name}`, async ({ page }) => {
     const item = firstCatalogueItem();
-    await page.goto(`/?p=${item.code}&${state.query}`);
+    await page.goto(`/uk?p=${item.code}&${state.query}`);
     await expect(page.getByText(VERDICT).first()).toBeVisible();
     await state.assertReached(page);
     await expectNoViolations(page);
@@ -56,7 +56,7 @@ for (const state of STATES) {
 }
 
 test("axe: marginal verdict", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
   await reachMarginalVerdict(page);
@@ -66,7 +66,7 @@ test("axe: marginal verdict", async ({ page }) => {
 test("axe: product search open with results and with none", async ({ page }) => {
   const item = firstCatalogueItem();
   const search = page.locator("#product-search");
-  await page.goto("/");
+  await page.goto("/uk");
   await search.fill(item.name);
   await expect(
     page.getByRole("button", { name: `${item.brand} ${item.name}` }).first(),
@@ -83,8 +83,8 @@ test("mobile: reflows at 320px with no horizontal scroll", async ({ page }, test
   await page.setViewportSize({ width: REFLOW_WIDTH, height: REFLOW_HEIGHT });
   const item = firstCatalogueItem();
   const urls = [
-    `/?p=${item.code}&sp=9999.00`,
-    `/?m=AU&pl=shopify&p=${item.code}&sp=9999.00`,
+    `/uk?p=${item.code}&sp=9999.00`,
+    `/uk?m=AU&pl=shopify&p=${item.code}&sp=9999.00`,
     `/compare?p=${item.code}&sp_uk=9999.00&sp_au=19999.00`,
   ];
   for (const url of urls) {
@@ -109,7 +109,7 @@ test("mobile: reflows at 320px with no horizontal scroll", async ({ page }, test
 test("prefers-reduced-motion removes the waterfall transition", async ({ page }) => {
   const item = firstCatalogueItem();
   const transitionSeconds = async (): Promise<number> => {
-    await page.goto(`/?p=${item.code}&sp=9999.00`);
+    await page.goto(`/uk?p=${item.code}&sp=9999.00`);
     const segment = page
       .getByRole("img", { name: /Cost waterfall/ })
       .locator("div")

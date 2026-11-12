@@ -34,7 +34,7 @@ async function waitForHydration(page: Page, inputId: string): Promise<void> {
 test("a price typed before hydration is used once the page hydrates", async ({ page }) => {
   const item = firstCatalogueItem();
   const release = await holdHydration(page);
-  await page.goto(`/?p=${item.code}`, { waitUntil: "commit" });
+  await page.goto(`/uk?p=${item.code}`, { waitUntil: "commit" });
   const price = page.getByRole("textbox", { name: "Selling price" });
   await price.fill("9999.00");
   await release();
@@ -47,7 +47,7 @@ test("a price typed before hydration is used once the page hydrates", async ({ p
 test("keeps every field typed before hydration", async ({ page }) => {
   const item = firstCatalogueItem();
   const release = await holdHydration(page);
-  await page.goto(`/?p=${item.code}`, { waitUntil: "commit" });
+  await page.goto(`/uk?p=${item.code}`, { waitUntil: "commit" });
   await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
   await page.getByRole("textbox", { name: "Shipping" }).fill("3.50");
   await release();
@@ -70,7 +70,7 @@ test("a /compare price typed before hydration is used once the page hydrates", a
 
 test("a deep link is not rewritten on load", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto(`/?p=${item.code}&sp=9999.00`);
+  await page.goto(`/uk?p=${item.code}&sp=9999.00`);
   await waitForHydration(page, "selling-price");
   await expect(page.getByText(VERDICT)).toBeVisible();
   expect(new URL(page.url()).search).toBe(`?p=${item.code}&sp=9999.00`);

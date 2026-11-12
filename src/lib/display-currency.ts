@@ -11,6 +11,11 @@ const SYMBOL: Record<DisplayCurrency, string> = { AUD: "A$", USD: "US$", HKD: "H
 
 type DisplayRates = { AUD: number; HKD?: number };
 
+// Fixed USD→HKD rate, a Uniqbe business decision. HKD is pegged to the USD
+// (7.75–7.85 band), so the calculator uses this fixed figure instead of a
+// daily rate. Change it here only on Uniqbe's instruction.
+export const FIXED_HKD_PER_USD = 7.845;
+
 /** Converts an AUD decimal string to `target`, 2 dp, or null when the rate is missing. */
 export function toDisplay(
   amountAud: string,

@@ -3,7 +3,7 @@ import { VERDICT, expectNoViolations, tabUntil } from "./a11y-helpers";
 import { firstCatalogueItem, pickFirstProduct } from "./helpers";
 
 test("axe: / with a UK result on screen", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   await pickFirstProduct(page);
   await page.getByRole("textbox", { name: "Selling price" }).fill("9999.00");
   await expect(page.getByText(VERDICT)).toBeVisible();
@@ -12,7 +12,7 @@ test("axe: / with a UK result on screen", async ({ page }) => {
 
 test("axe: AU market with the threshold banner", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto(`/?m=AU&p=${item.code}&sp=19999.00`);
+  await page.goto(`/uk?m=AU&p=${item.code}&sp=19999.00`);
   await expect(page.getByText(VERDICT)).toBeVisible();
   await expect(page.getByRole("status")).toBeVisible();
   await expectNoViolations(page);
@@ -28,7 +28,7 @@ test("axe: /compare", async ({ page }) => {
 
 test("keyboard only: pick -> price -> verdict -> switch market", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto("/");
+  await page.goto("/uk");
   await tabUntil(page, `document.activeElement?.id === "product-search"`);
   await page.keyboard.type(item.name);
   await tabUntil(
@@ -63,9 +63,9 @@ test("no horizontal scroll on / and /compare", async ({ page }, testInfo) => {
 const MIN_TARGET_PX = 44;
 
 const TARGET_SCREENS = [
-  { name: "UK", url: (code: string) => `/?p=${code}&sp=9999.00` },
-  { name: "AU eBay", url: (code: string) => `/?m=AU&pl=ebay&p=${code}&sp=9999.00` },
-  { name: "AU Shopify", url: (code: string) => `/?m=AU&pl=shopify&p=${code}&sp=9999.00` },
+  { name: "UK", url: (code: string) => `/uk?p=${code}&sp=9999.00` },
+  { name: "AU eBay", url: (code: string) => `/uk?m=AU&pl=ebay&p=${code}&sp=9999.00` },
+  { name: "AU Shopify", url: (code: string) => `/uk?m=AU&pl=shopify&p=${code}&sp=9999.00` },
   {
     name: "/compare",
     url: (code: string) => `/compare?p=${code}&sp_uk=9999.00&sp_au=19999.00`,
@@ -98,7 +98,7 @@ for (const screen of TARGET_SCREENS) {
 }
 
 test("market switch is a labelled group of toggle buttons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/uk");
   const group = page.getByRole("group", { name: "Market" });
   await expect(group.getByRole("button", { name: /UK/ })).toHaveAttribute("aria-pressed", "true");
   await expect(group.getByRole("button", { name: /Australia/ })).toHaveAttribute(
@@ -115,7 +115,7 @@ test("market switch is a labelled group of toggle buttons", async ({ page }) => 
 
 test("product search announces how many results there are", async ({ page }) => {
   const item = firstCatalogueItem();
-  await page.goto("/");
+  await page.goto("/uk");
   const search = page.locator("#product-search");
   const status = page.getByTestId("product-search-status");
   await expect(status).toHaveText("");

@@ -1,8 +1,13 @@
-import { Catalogue, MarketRules } from "../lib/schemas";
-import catalogueData from "../data/catalogue.json";
-import marketRulesData from "../data/market-rules.json";
-import { readFxSnapshot } from "../fx/store";
-import { SimulatorShell } from "../components/simulator/SimulatorShell";
+import { Catalogue, MarketRules } from "../../lib/schemas";
+import catalogueData from "../../data/catalogue.json";
+import marketRulesData from "../../data/market-rules.json";
+import { readFxSnapshot } from "../../fx/store";
+import { SimulatorShell } from "../../components/simulator/SimulatorShell";
+
+// The original UK/AU simulator, moved here when the AU calculator became "/".
+export const metadata = {
+  title: "Uniqbe Price Simulator (UK and AU)",
+};
 
 // The FX snapshot is live, Redis-backed state (Phase 3) — this route must
 // never be statically prerendered, or the rate/degraded flag would freeze

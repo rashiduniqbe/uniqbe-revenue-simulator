@@ -1,4 +1,4 @@
-import { FxRawSnapshot, hkdRate, type FxRawSnapshotType } from "../../lib/schemas";
+import { FxRawSnapshot, type FxRawSnapshotType } from "../../lib/schemas";
 
 type FallbackResponse = {
   date: string;
@@ -27,7 +27,7 @@ export async function fetchFallbackSnapshot(
   }
   return FxRawSnapshot.parse({
     base: "USD",
-    rates: { GBP: gbp, AUD: aud, ...hkdRate(body.rates) },
+    rates: { GBP: gbp, AUD: aud },
     asOf: body.date,
     fetchedAt: new Date().toISOString(),
     provider: "fallback",

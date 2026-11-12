@@ -9,6 +9,7 @@ import { fxInputFor } from "../../lib/compare";
 import { formatFxBadgeText } from "../../lib/fx-format";
 import {
   DISPLAY_CURRENCIES,
+  FIXED_HKD_PER_USD,
   convertAmount,
   type DisplayCurrency,
 } from "../../lib/display-currency";
@@ -48,14 +49,14 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   const setScenario = (next: ScenarioParams) => setRawScenario(pinAu(next));
   const [extra, setExtra] = useQueryStates(prototypeParsers);
   const theme = useProtoTheme();
-  // An HKD link opened while no HKD rate is available falls back to USD.
-  const currency: DisplayCurrency =
-    extra.cur === "HKD" && fx.rates.HKD === undefined ? "USD" : extra.cur;
+  const currency: DisplayCurrency = extra.cur;
   const overrides: CostOverrides = { customCost: extra.cc, declaredValue: extra.dv };
+  // Live USD→AUD for the engine; HKD is Uniqbe's fixed rate (see FIXED_HKD_PER_USD).
+  const rates = { AUD: fx.rates.AUD, HKD: FIXED_HKD_PER_USD };
 
   const selectedItem = items.find((item) => item.code === scenario.productCode) ?? null;
   const input = selectedItem
-    ? buildPrototypeInput(scenario, selectedItem, rules, currency, fx.rates, overrides)
+    ? buildPrototypeInput(scenario, selectedItem, rules, currency, rates, overrides)
     : null;
   const result = input ? calculate(input, fxInputFor(fx, "AU"), rules) : null;
 
@@ -74,7 +75,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
 
   // Keep what the partner typed worth the same when they switch currency.
   function changeCurrency(next: DisplayCurrency) {
-    const convert = (value: string) => convertAmount(value, fx.rates, currency, next);
+    const convert = (value: string) => convertAmount(value, rates, currency, next);
     setScenario({
       ...scenario,
       sellingPriceLocal: convert(scenario.sellingPriceLocal),
@@ -105,7 +106,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
             onChange={setScenario}
             rules={rules}
             currency={currency}
-            rates={fx.rates}
+            rates={rates}
             overrides={overrides}
             onOverridesChange={(next) =>
               void setExtra({
@@ -117,7 +118,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
           <ProtoResultCard
             result={result}
             currency={currency}
-            rates={fx.rates}
+            rates={rates}
             thresholdLocal={rules.AU.deMinimisLocal}
             onReset={() => {
               setScenario({ ...DEFAULT_SCENARIO, market: "AU" });
@@ -132,9 +133,9 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
 }
 
 function fxBadgeText(fx: FxSnapshotType): string {
-  // "1 USD = 1.3950 AUD · rate as of 25 Aug 2026" → add HKD after the AUD rate.
+  // "1 USD = 1.3950 AUD · rate as of 25 Aug 2026" → add the fixed HKD rate after AUD.
   const [audPart, asOfPart] = formatFxBadgeText(fx.rates.AUD, "AUD", fx.asOf).split(" · ");
-  const hkdPart = fx.rates.HKD === undefined ? null : `${fx.rates.HKD.toFixed(4)} HKD`;
+  const hkdPart = `${FIXED_HKD_PER_USD.toFixed(4)} HKD (fixed)`;
   return [audPart, hkdPart, asOfPart].filter(Boolean).join(" · ");
 }
 
@@ -153,12 +154,7 @@ function ProtoHeader({
   onCurrencyChange: (currency: DisplayCurrency) => void;
   themeToggle: ReactNode;
 }) {
-  const currencyOptions = DISPLAY_CURRENCIES.map((value) => ({
-    value,
-    label: value,
-    disabledReason:
-      value === "HKD" && fx.rates.HKD === undefined ? "No HKD rate available right now" : undefined,
-  }));
+  const currencyOptions = DISPLAY_CURRENCIES.map((value) => ({ value, label: value }));
   const skippedReasons = [...new Set(skipped.map((row) => row.reason))].join("; ");
   // Fixed UTC text, not toLocaleString: server and browser time zones would differ.
   const fetchedText = `${fetchedAt.slice(0, 16).replace("T", " ")} UTC`;
@@ -203,7 +199,7 @@ export function PrototypeError() {
       <div className={`${styles.card} ${styles.errorCard}`} role="alert">
         <h1 className={styles.title}>Price list unavailable</h1>
         <p>Couldn&rsquo;t load the price list from storeprice.uniqbe.com. Try again in a minute.</p>
-        <a className={styles.link} href="/prototype/au">
+        <a className={styles.link} href="/">
           Reload
         </a>
       </div>
