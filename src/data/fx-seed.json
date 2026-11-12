@@ -1,6 +1,6 @@
 {
   "base": "USD",
-  "rates": { "GBP": 0.7424, "AUD": 1.395 },
+  "rates": { "GBP": 0.7424, "AUD": 1.395, "HKD": 7.838 },
   "asOf": "2026-08-25",
   "fetchedAt": "2026-08-25T06:00:00.000Z",
   "provider": "seed"

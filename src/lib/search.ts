@@ -1,5 +1,4 @@
 import Fuse from "fuse.js";
-import type { CatalogueItemType } from "./schemas";
 
 const FUSE_OPTIONS = {
   keys: ["search"],
@@ -7,7 +6,7 @@ const FUSE_OPTIONS = {
   ignoreLocation: true,
 };
 
-export function filterProducts(items: CatalogueItemType[], query: string): CatalogueItemType[] {
+export function filterProducts<T extends { search: string }>(items: T[], query: string): T[] {
   const trimmed = query.trim();
   if (!trimmed) {
     return items;
