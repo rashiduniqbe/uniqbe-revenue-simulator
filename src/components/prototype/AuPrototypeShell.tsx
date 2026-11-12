@@ -14,7 +14,9 @@ import {
 } from "../../lib/display-currency";
 import { buildPrototypeInput } from "../../lib/prototype-input";
 import { calculate } from "../../engine";
+import type { ReactNode } from "react";
 import { Segmented } from "./controls";
+import { ThemeToggle, useProtoTheme } from "./ThemeToggle";
 import { ProtoInputCard, type CostOverrides } from "./ProtoInputCard";
 import { ProtoResultCard } from "./ProtoResultCard";
 import styles from "./proto.module.css";
@@ -45,6 +47,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   const scenario = pinAu(rawScenario);
   const setScenario = (next: ScenarioParams) => setRawScenario(pinAu(next));
   const [extra, setExtra] = useQueryStates(prototypeParsers);
+  const theme = useProtoTheme();
   // An HKD link opened while no HKD rate is available falls back to USD.
   const currency: DisplayCurrency =
     extra.cur === "HKD" && fx.rates.HKD === undefined ? "USD" : extra.cur;
@@ -83,7 +86,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   }
 
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-theme={theme.chosen ?? undefined}>
       <div className={styles.wrap}>
         <ProtoHeader
           fx={fx}
@@ -91,6 +94,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
           skipped={skipped}
           currency={currency}
           onCurrencyChange={changeCurrency}
+          themeToggle={<ThemeToggle effective={theme.effective} onToggle={theme.toggle} />}
         />
         <div className={styles.layout}>
           <ProtoInputCard
@@ -140,12 +144,14 @@ function ProtoHeader({
   skipped,
   currency,
   onCurrencyChange,
+  themeToggle,
 }: {
   fx: FxSnapshotType;
   fetchedAt: string;
   skipped: SkippedRow[];
   currency: DisplayCurrency;
   onCurrencyChange: (currency: DisplayCurrency) => void;
+  themeToggle: ReactNode;
 }) {
   const currencyOptions = DISPLAY_CURRENCIES.map((value) => ({
     value,
@@ -176,6 +182,7 @@ function ProtoHeader({
           value={currency}
           onChange={onCurrencyChange}
         />
+        {themeToggle}
       </div>
     </header>
   );

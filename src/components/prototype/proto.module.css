@@ -23,8 +23,26 @@
   line-height: 1.45;
 }
 
+/* Dark tokens apply when the partner picked dark, or when they haven't picked
+   and the system is dark (same rule as box converter's :root[data-theme]). */
+.root[data-theme="dark"] {
+  --bg: #0f141a;
+  --sheet: #171e27;
+  --ink: #e6ebf1;
+  --muted: #93a0b0;
+  --line: #2a3441;
+  --accent: #6d9eff;
+  --accent-ink: #0b1220;
+  --accent-soft: #17243a;
+  --warn: #f0b252;
+  --warn-bg: #33270f;
+  --ok: #5fcf93;
+  --bad: #ff8a7a;
+  --field: #11171f;
+  color-scheme: dark;
+}
 @media (prefers-color-scheme: dark) {
-  .root {
+  .root:not([data-theme="light"]) {
     --bg: #0f141a;
     --sheet: #171e27;
     --ink: #e6ebf1;
@@ -42,10 +60,13 @@
   }
 }
 
+/* Box converter: body padding 14px 16px, .wrap max-width 1480px of content.
+   Tailwind's preflight makes this border-box, so the padding is added on top. */
 .wrap {
-  max-width: 1360px;
+  max-width: calc(1480px + 2 * 16px);
   margin: 0 auto;
-  padding: 18px 20px 0;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) 0
+    max(16px, env(safe-area-inset-left, 0px));
 }
 
 .display {
@@ -62,16 +83,42 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px 14px;
-  margin-bottom: 14px;
+  gap: 4px 16px;
+  margin-bottom: 12px;
 }
+/* Same as box converter's `header h1`. */
 .title {
   margin: 0;
   font-family: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
-  font-size: 26px;
+  font-size: 1.65rem;
   font-weight: 700;
+  line-height: 1.1;
   letter-spacing: 0.01em;
   text-transform: uppercase;
+}
+@media (max-width: 760px) {
+  .title {
+    font-size: 1.45rem;
+  }
+}
+.iconButton {
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--ink);
+  cursor: pointer;
+}
+.iconButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.iconButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 .subtitle {
   color: var(--muted);
@@ -89,8 +136,9 @@
 /* Two-column layout */
 .layout {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   align-items: start;
+  min-width: 0;
 }
 @media (min-width: 1100px) {
   .layout {
