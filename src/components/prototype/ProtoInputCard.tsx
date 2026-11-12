@@ -11,6 +11,7 @@ import {
   withPlatform,
 } from "../../lib/scenario-defaults";
 import { formatMoney, toAud, toDisplay, type DisplayCurrency } from "../../lib/display-currency";
+import { isDeclaredBelowPrice } from "../../lib/prototype-input";
 import { useAdoptTypedValues } from "../simulator/useAdoptTypedValues";
 import { MoneyField, Segmented } from "./controls";
 import styles from "./proto.module.css";
@@ -195,11 +196,17 @@ export function ProtoInputCard({
           id="proto-declared-value"
           label={`Customs declared value (${currency})`}
           placeholder="Same as product price"
-          hint="Value declared to customs. The A$1,000 GST test, duty and import GST use it. Leave blank to use your product price."
+          hint="Must be the real price paid for the goods. The A$1,000 GST test, duty and import GST use it. Leave blank to use your product price."
           inputRef={overrideRefs.declaredValue}
           value={overrides.declaredValue}
           onChange={(v) => onOverridesChange({ declaredValue: v })}
         />
+        {isDeclaredBelowPrice(overrides, storeCost) && (
+          <p className={styles.notice} role="alert" data-testid="proto-underdeclared-warning">
+            This is lower than your product price. The customs value must be the price actually paid
+            for the goods. Declaring less is illegal and can lead to penalties and seized goods.
+          </p>
+        )}
         <Segmented
           label="GST registered"
           options={YES_NO}

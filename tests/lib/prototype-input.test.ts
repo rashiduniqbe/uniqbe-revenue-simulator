@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPrototypeInput } from "../../src/lib/prototype-input";
+import { buildPrototypeInput, isDeclaredBelowPrice } from "../../src/lib/prototype-input";
 import { MarketRules } from "../../src/lib/schemas";
 import { DEFAULT_SCENARIO } from "../../src/lib/url-state";
 import rulesRaw from "../../src/data/market-rules.json";
@@ -92,5 +92,31 @@ describe("buildPrototypeInput", () => {
 
   it("returns null for HKD when no HKD rate is available", () => {
     expect(buildPrototypeInput(scenario, item, rules, "HKD", { AUD: 1.5 }, noOverrides)).toBeNull();
+  });
+});
+
+describe("isDeclaredBelowPrice", () => {
+  it("is true when the declared value is below the store price", () => {
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "99.99" }, "100.00")).toBe(true);
+  });
+
+  it("compares against the custom price when one is typed", () => {
+    expect(isDeclaredBelowPrice({ customCost: "80", declaredValue: "90" }, "100.00")).toBe(false);
+    expect(isDeclaredBelowPrice({ customCost: "80", declaredValue: "79" }, "100.00")).toBe(true);
+  });
+
+  it("is false when the declared value equals or exceeds the price", () => {
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "100" }, "100.00")).toBe(false);
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "150" }, "100.00")).toBe(false);
+  });
+
+  it("is false when there is nothing usable to compare", () => {
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "" }, "100.00")).toBe(false);
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "abc" }, "100.00")).toBe(false);
+    expect(isDeclaredBelowPrice({ customCost: "", declaredValue: "50" }, null)).toBe(false);
+  });
+
+  it("falls back to the store price when the custom price is malformed", () => {
+    expect(isDeclaredBelowPrice({ customCost: "x", declaredValue: "50" }, "100.00")).toBe(true);
   });
 });

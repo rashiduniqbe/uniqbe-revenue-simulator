@@ -52,6 +52,18 @@ export function buildPrototypeInput(
   };
 }
 
+// True when a usable declared value is below the product price in use (the
+// custom price if one is typed and valid, otherwise the store price). Both
+// are in the same display currency. Drives the under-declaration warning.
+export function isDeclaredBelowPrice(overrides: Overrides, storePrice: string | null): boolean {
+  const declared = overrides.declaredValue.trim();
+  if (!isValidDecimalString(declared)) return false;
+  const custom = overrides.customCost.trim();
+  const price = isValidDecimalString(custom) ? custom : storePrice;
+  if (price === null || !isValidDecimalString(price)) return false;
+  return new Decimal(declared).lt(new Decimal(price));
+}
+
 // Blank means "not overridden"; anything typed must be a positive amount.
 function optionalPositive(
   raw: string,
