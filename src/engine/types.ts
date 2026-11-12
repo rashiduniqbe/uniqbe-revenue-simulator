@@ -40,6 +40,12 @@ export type SimulationInput = {
   shopifyPlan: "basic" | "grow" | "advanced";
   shopifyHasAbn: boolean;
   ebayFreeTier: boolean;
+  // Optional overrides, both in the market's local currency. goodsCostLocal
+  // replaces usd × rate as the cost of goods. declaredValueLocal is the value
+  // declared to customs: the de minimis test, duty and import tax are worked
+  // out on it instead of on the goods cost.
+  goodsCostLocal?: string;
+  declaredValueLocal?: string;
   _planParityDisableFeeTax?: boolean;
 };
 

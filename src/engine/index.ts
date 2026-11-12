@@ -24,6 +24,22 @@ function negativeAmount(value: Decimal): string {
   return value.isZero() ? "0.00" : `-${value.toFixed(2)}`;
 }
 
+// The cost of goods (usd × rate unless overridden) and the customs value the
+// threshold, duty and import tax are assessed on (the goods cost unless a
+// declared value is given). Both in local currency.
+function goodsAndCustomsValue(
+  input: Pick<SimulationInput, "usd" | "goodsCostLocal" | "declaredValueLocal">,
+  fxRate: Decimal,
+): { goods: Decimal; customsValue: Decimal } {
+  const goods =
+    input.goodsCostLocal !== undefined
+      ? r2(input.goodsCostLocal)
+      : r2(new Decimal(input.usd).times(fxRate));
+  const customsValue =
+    input.declaredValueLocal !== undefined ? r2(input.declaredValueLocal) : goods;
+  return { goods, customsValue };
+}
+
 export function calculate(
   input: SimulationInput,
   fx: FxInput,
@@ -33,13 +49,13 @@ export function calculate(
   const marketRules = rules[input.market];
 
   const fxRate = new Decimal(fx.rate);
-  const goods = r2(new Decimal(input.usd).times(fxRate));
+  const { goods, customsValue } = goodsAndCustomsValue(input, fxRate);
   const shipping = r2(input.inboundShippingLocal);
   const dutyPct = new Decimal(input.dutyPct);
-  const duty = market.computeDuty(goods, dutyPct);
+  const duty = market.computeDuty(customsValue, dutyPct);
 
-  const above = market.isAboveThreshold(goods, shipping, marketRules);
-  const importTax = market.computeImportTax(goods, shipping, duty, above);
+  const above = market.isAboveThreshold(customsValue, shipping, marketRules);
+  const importTax = market.computeImportTax(customsValue, shipping, duty, above);
 
   const landed = input.taxRegistered
     ? goods.plus(shipping).plus(duty)
@@ -128,7 +144,9 @@ export function calculate(
 
   const warnings = emitWarnings({
     market: input.market,
-    goods,
+    // The near-threshold check compares the customs value, like the threshold itself.
+    goods: customsValue,
+    declaredValueSupplied: input.declaredValueLocal !== undefined,
     shipping,
     duty,
     above: input.market === "AU" ? above : null,
@@ -184,12 +202,12 @@ export function suggestPrice(
   const market = MARKET_MODULES[input.market];
   const marketRules = rules[input.market];
   const fxRate = new Decimal(fx.rate);
-  const goods = r2(new Decimal(input.usd).times(fxRate));
+  const { goods, customsValue } = goodsAndCustomsValue(input, fxRate);
   const shipping = r2(input.inboundShippingLocal);
   const dutyPct = new Decimal(input.dutyPct);
-  const duty = market.computeDuty(goods, dutyPct);
-  const above = market.isAboveThreshold(goods, shipping, marketRules);
-  const importTax = market.computeImportTax(goods, shipping, duty, above);
+  const duty = market.computeDuty(customsValue, dutyPct);
+  const above = market.isAboveThreshold(customsValue, shipping, marketRules);
+  const importTax = market.computeImportTax(customsValue, shipping, duty, above);
   const landed = input.taxRegistered
     ? goods.plus(shipping).plus(duty)
     : goods.plus(shipping).plus(duty).plus(importTax);

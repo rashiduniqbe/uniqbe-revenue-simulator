@@ -266,6 +266,15 @@
 }
 .currencySeg {
   width: 210px;
+}
+.pushRight {
+  margin-left: auto;
+}
+.headControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
   margin-left: auto;
 }
 .ghostButton {

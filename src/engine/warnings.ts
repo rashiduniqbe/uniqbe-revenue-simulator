@@ -27,7 +27,9 @@ export function emitWarnings(ctx: EngineContext): EngineWarning[] {
     warnings.push({ code: "IMPORT_TAX_CASHFLOW" });
   }
 
-  warnings.push({ code: "CUSTOMS_DECLARED_VALUE_UNCONFIRMED" });
+  if (!ctx.declaredValueSupplied) {
+    warnings.push({ code: "CUSTOMS_DECLARED_VALUE_UNCONFIRMED" });
+  }
 
   if (ctx.importTax.gt(0) || ctx.duty.gt(0)) {
     warnings.push({ code: "DOORSTEP_LIABILITY" });

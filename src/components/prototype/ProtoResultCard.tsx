@@ -3,15 +3,9 @@
 import Decimal from "decimal.js";
 import type { SimulationResult } from "../../engine/types";
 import { platformFeeLabel } from "../../lib/breakdown-format";
-import {
-  DISPLAY_CURRENCIES,
-  formatMoney,
-  toDisplay,
-  type DisplayCurrency,
-} from "../../lib/display-currency";
+import { formatMoney, toDisplay, type DisplayCurrency } from "../../lib/display-currency";
 import { thresholdBannerText } from "../../lib/threshold-copy";
 import { WARNING_COPY, sortWarningsByPriority } from "../../lib/warnings-copy";
-import { Segmented } from "./controls";
 import styles from "./proto.module.css";
 
 const VERDICT_LABEL: Record<SimulationResult["verdict"], string> = {
@@ -23,7 +17,6 @@ const VERDICT_LABEL: Record<SimulationResult["verdict"], string> = {
 interface ProtoResultCardProps {
   result: SimulationResult | null;
   currency: DisplayCurrency;
-  onCurrencyChange: (currency: DisplayCurrency) => void;
   rates: { AUD: number; HKD?: number };
   thresholdLocal: number | null;
   onReset: () => void;
@@ -32,35 +25,30 @@ interface ProtoResultCardProps {
 export function ProtoResultCard({
   result,
   currency,
-  onCurrencyChange,
   rates,
   thresholdLocal,
   onReset,
 }: ProtoResultCardProps) {
-  const options = DISPLAY_CURRENCIES.map((value) => ({
-    value,
-    label: value,
-    disabledReason:
-      value === "HKD" && rates.HKD === undefined ? "No HKD rate available right now" : undefined,
-  }));
-  // Engine output is AUD; anything shown in another currency is converted for display only.
+  // Engine output is AUD; it is shown in the page's chosen currency.
   const money = (amountAud: string) =>
     formatMoney(toDisplay(amountAud, rates, currency) ?? amountAud, currency);
+  // The A$1,000 line is set in AUD by law; show what it is worth in the chosen currency.
+  const thresholdEquivalent =
+    thresholdLocal !== null && currency !== "AUD" ? money(String(thresholdLocal)) : null;
 
   return (
     <section className={styles.resultCol} aria-label="Result">
       <div className={`${styles.card} ${styles.total}`}>
         <div className={styles.totalHead}>
           <h2 className={styles.totalTitle}>Net profit per unit</h2>
-          <Segmented
-            label="Show amounts in"
-            hideLabel
-            className={styles.currencySeg}
-            options={options}
-            value={currency}
-            onChange={onCurrencyChange}
-          />
-          <button type="button" className={styles.ghostButton} onClick={onReset}>
+          <span className={`${styles.tileNote} ${styles.mono}`} data-testid="proto-result-currency">
+            in {currency}
+          </span>
+          <button
+            type="button"
+            className={`${styles.ghostButton} ${styles.pushRight}`}
+            onClick={onReset}
+          >
             Reset
           </button>
         </div>
@@ -73,7 +61,13 @@ export function ProtoResultCard({
         )}
       </div>
 
-      {result && <Notices result={result} thresholdLocal={thresholdLocal} />}
+      {result && (
+        <Notices
+          result={result}
+          thresholdLocal={thresholdLocal}
+          thresholdEquivalent={thresholdEquivalent}
+        />
+      )}
       {result && <Breakdown result={result} money={money} />}
 
       <p className={styles.footnote}>
@@ -118,9 +112,11 @@ function Tiles({ result, money }: { result: SimulationResult; money: (aud: strin
 function Notices({
   result,
   thresholdLocal,
+  thresholdEquivalent,
 }: {
   result: SimulationResult;
   thresholdLocal: number | null;
+  thresholdEquivalent: string | null;
 }) {
   const warnings = sortWarningsByPriority(
     result.auAboveThreshold === false
@@ -134,6 +130,8 @@ function Notices({
       {showThreshold && result.auAboveThreshold !== null && thresholdLocal !== null && (
         <li className={styles.notice} role="status">
           {thresholdBannerText(result.auAboveThreshold, thresholdLocal)}
+          {thresholdEquivalent &&
+            ` (${formatMoney(String(thresholdLocal), "AUD")} ≈ ${thresholdEquivalent} today)`}
         </li>
       )}
       {warnings.map((warning) => (

@@ -22,6 +22,9 @@ export type EngineContext = {
   adSpend: Decimal;
   shopifyHasAbn: boolean;
   deMinimis: DeMinimisRule;
+  // True when the partner entered a customs declared value, so the estimate no
+  // longer assumes their reseller cost is what gets declared.
+  declaredValueSupplied?: boolean;
 };
 
 export interface MarketModule {
