@@ -33,6 +33,16 @@ describe("fetchFallbackSnapshot", () => {
     });
   });
 
+  it("keeps the HKD display rate when the response carries one", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ date: "2026-08-25", rates: { GBP: 0.75, AUD: 1.4, HKD: 7.8 } }),
+    }) as unknown as typeof fetch;
+    const snapshot = await fetchFallbackSnapshot(fetchImpl, "https://backup.test/rates", undefined);
+    expect(snapshot.rates).toEqual({ GBP: 0.75, AUD: 1.4, HKD: 7.8 });
+  });
+
   it("omits the Authorization header when no API key is configured", async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,

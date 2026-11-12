@@ -46,6 +46,20 @@ export const Catalogue = z.object({
 });
 export type CatalogueType = z.infer<typeof Catalogue>;
 
+// One product row from storeprice.uniqbe.com's inline `const P = [...]` array.
+// Prices are whole US dollars; dsNum (the dropship price) is the only price used.
+export const StorepriceRow = z.object({
+  sku: z.string().regex(/^[A-Z]{2}\d{5}$/),
+  name: z.string().min(1),
+  cat: z.string().min(1),
+  dsNum: z.number().int().positive(),
+});
+export type StorepriceRowType = z.infer<typeof StorepriceRow>;
+
+// A product priced live from storeprice: the catalogue item shape minus the
+// fields that only the xlsx price list carries (brand, HKD reference price).
+export type LiveItemType = Omit<CatalogueItemType, "brand" | "hkdRef">;
+
 export const AmazonFees = z.object({
   referralFeePctDefault: z.number(),
   referralFeePctByCategory: categoryMap(z.number()),
@@ -125,9 +139,19 @@ export const MarketRules = z.object({
 });
 export type MarketRulesType = z.infer<typeof MarketRules>;
 
+// HKD is display-only (the AU prototype's result toggle) and optional so
+// snapshots written before it was fetched still parse.
+const FxRates = z.object({ GBP: z.number(), AUD: z.number(), HKD: z.number().optional() });
+
+/** The `{ HKD }` part of a provider's rates, or nothing when the provider omitted it. */
+export function hkdRate(rates: Record<string, number | undefined>): { HKD?: number } {
+  const hkd = rates.HKD;
+  return typeof hkd === "number" ? { HKD: hkd } : {};
+}
+
 export const FxSnapshot = z.object({
   base: z.literal("USD"),
-  rates: z.object({ GBP: z.number(), AUD: z.number() }),
+  rates: FxRates,
   asOf: z.string().date(),
   fetchedAt: z.string(),
   provider: z.enum(["frankfurter", "fallback", "seed"]),
@@ -138,7 +162,7 @@ export type FxSnapshotType = z.infer<typeof FxSnapshot>;
 
 export const FxRawSnapshot = z.object({
   base: z.literal("USD"),
-  rates: z.object({ GBP: z.number(), AUD: z.number() }),
+  rates: FxRates,
   asOf: z.string().date(),
   fetchedAt: z.string(),
   provider: z.enum(["frankfurter", "fallback", "seed"]),
