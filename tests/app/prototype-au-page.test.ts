@@ -36,6 +36,10 @@ vi.mock("nuqs", async (importOriginal) => ({
       shp: "basic",
       abn: false,
       et: false,
+      // Prototype-only keys (currency, custom price, declared value).
+      cur: "USD",
+      cc: "",
+      dv: "",
     },
     () => undefined,
   ],
@@ -78,5 +82,7 @@ describe("/prototype/au page", () => {
     expect(html).toContain("Net profit per unit");
     expect(html).toContain("1 USD = 1.4000 AUD · 7.8000 HKD · rate as of 25 Aug 2026");
     expect(html).toContain("Final price is confirmed on Uniqbe");
+    expect(html).toContain('aria-label="Currency for all prices"');
+    expect(html).toContain("in USD");
   });
 });

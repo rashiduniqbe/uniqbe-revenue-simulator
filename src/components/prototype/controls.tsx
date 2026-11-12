@@ -55,9 +55,19 @@ interface MoneyFieldProps {
   onChange: (value: string) => void;
   inputRef: RefObject<HTMLInputElement | null>;
   placeholder?: string;
+  hint?: string;
 }
 
-export function MoneyField({ id, label, value, onChange, inputRef, placeholder }: MoneyFieldProps) {
+export function MoneyField({
+  id,
+  label,
+  value,
+  onChange,
+  inputRef,
+  placeholder,
+  hint,
+}: MoneyFieldProps) {
+  const hintId = hint ? `${id}-hint` : undefined;
   return (
     <div className={styles.field}>
       <label htmlFor={id} className={styles.label}>
@@ -71,9 +81,15 @@ export function MoneyField({ id, label, value, onChange, inputRef, placeholder }
         autoComplete="off"
         className={`${styles.input} ${styles.mono}`}
         placeholder={placeholder}
+        aria-describedby={hintId}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
+      {hint && (
+        <span id={hintId} className={styles.hint}>
+          {hint}
+        </span>
+      )}
     </div>
   );
 }
