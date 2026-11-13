@@ -27,6 +27,7 @@ interface SimDetailProps {
   thresholdLocal: number | null;
   onPlatformChange: (platform: SimPlatform) => void;
   onClose?: () => void;
+  onCheck: () => void;
 }
 
 const PLATFORM_OPTIONS = SIM_PLATFORMS.map((p) => ({ value: p, label: PLATFORM_LABEL[p] }));
@@ -41,6 +42,7 @@ export function SimDetail({
   thresholdLocal,
   onPlatformChange,
   onClose,
+  onCheck,
 }: SimDetailProps) {
   const currency: DisplayCurrency = settings.currency;
   const cell = row.cells[platform];
@@ -101,6 +103,11 @@ export function SimDetail({
           <p className={proto.empty}>
             No price reaches a {settings.targetMarginPct}% margin on {PLATFORM_LABEL[platform]}.
           </p>
+        )}
+        {cell && (
+          <button type="button" className={styles.primaryButton} onClick={onCheck}>
+            Check this row in the calculator
+          </button>
         )}
       </div>
       {result && (

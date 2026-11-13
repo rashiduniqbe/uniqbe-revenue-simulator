@@ -5,7 +5,14 @@ import {
   parseAsStringLiteral,
   useQueryStates,
 } from "nuqs";
-import { SIM_PLATFORMS, TARGET_MARGINS, type SimPlatform, type TargetMarginPct } from "./simulate";
+import {
+  SIM_PLATFORMS,
+  TARGET_MARGINS,
+  cellScenario,
+  type SimPlatform,
+  type SimSettings,
+  type TargetMarginPct,
+} from "./simulate";
 
 export const VIEWS = ["sim", "calc"] as const;
 export type View = (typeof VIEWS)[number];
@@ -117,5 +124,61 @@ export function useSimUrlState(calculatorKeys: { p: string; sp: string }): {
     sim: fromShorts(rest),
     setView: (next) => void setShorts({ v: next }, { history: "push" }),
     setSim: (patch) => void setShorts(toShorts(patch), { history: "replace" }),
+  };
+}
+
+/** The URL keys "Check this row in the calculator" writes, in one history push. */
+export type CheckRowQuery = {
+  v: "calc";
+  m: "AU";
+  p: string;
+  pl: SimPlatform;
+  sp: string;
+  reg: boolean;
+  sh: string;
+  pk: string;
+  ad: string;
+  du: "";
+  rf: "";
+  ap: "professional";
+  shp: "basic";
+  abn: false;
+  et: false;
+  cc: "";
+  dv: "";
+};
+
+/**
+ * Opens the calculator on a simulated cell. The scenario is the cell's own
+ * (cellScenario), so the calculator rebuilds the same input and shows the
+ * same profit to the cent. Leftovers from an earlier calculator session —
+ * typed duty or referral fee, a custom cost or declared value, other plans —
+ * are cleared, because the simulation did not use them. cur is kept.
+ */
+export function checkRowQuery(
+  code: string,
+  settings: SimSettings,
+  platform: SimPlatform,
+  price: string,
+): CheckRowQuery {
+  const scenario = cellScenario({ code }, settings, platform, price);
+  return {
+    v: "calc",
+    m: "AU",
+    p: scenario.productCode,
+    pl: platform,
+    sp: scenario.sellingPriceLocal,
+    reg: scenario.taxRegistered,
+    sh: scenario.inboundShippingLocal,
+    pk: scenario.packagingLocal,
+    ad: scenario.adSpendLocal,
+    du: "",
+    rf: "",
+    ap: "professional",
+    shp: "basic",
+    abn: false,
+    et: false,
+    cc: "",
+    dv: "",
   };
 }

@@ -3,7 +3,12 @@
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
 import type { FxSnapshotType, LiveItemType, MarketRulesType } from "../../lib/schemas";
 import type { SkippedRow } from "../../lib/storeprice/parse";
-import { DEFAULT_SCENARIO, useScenario, type ScenarioParams } from "../../lib/url-state";
+import {
+  DEFAULT_SCENARIO,
+  scenarioParsers,
+  useScenario,
+  type ScenarioParams,
+} from "../../lib/url-state";
 import { deriveDutyPctDefault, deriveReferralFeeDefault } from "../../lib/scenario-defaults";
 import { fxInputFor } from "../../lib/compare";
 import { formatFxBadgeText } from "../../lib/fx-format";
@@ -20,7 +25,12 @@ import { Segmented } from "./controls";
 import { ThemeToggle, useProtoTheme } from "./ThemeToggle";
 import { ProtoInputCard, type CostOverrides } from "./ProtoInputCard";
 import { ProtoResultCard } from "./ProtoResultCard";
-import { useSimUrlState, type View } from "../../lib/simulation/view-state";
+import {
+  simParsers,
+  useSimUrlState,
+  type CheckRowQuery,
+  type View,
+} from "../../lib/simulation/view-state";
 import { SimulationView } from "./simulation/SimulationView";
 import styles from "./proto.module.css";
 
@@ -50,6 +60,14 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   const scenario = pinAu(rawScenario);
   const setScenario = (next: ScenarioParams) => setRawScenario(pinAu(next));
   const [extra, setExtra] = useQueryStates(prototypeParsers);
+  // "Check this row in the calculator": every key in one history push, so Back
+  // returns to the simulation exactly as it was.
+  const [, setCheckKeys] = useQueryStates({
+    ...scenarioParsers,
+    ...prototypeParsers,
+    v: simParsers.v,
+  });
+  const checkRow = (query: CheckRowQuery) => void setCheckKeys(query, { history: "push" });
   const theme = useProtoTheme();
   const { view, sim, setView, setSim } = useSimUrlState({
     p: rawScenario.productCode,
@@ -116,6 +134,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
             onScenarioChange={setScenario}
             sim={sim}
             onSimChange={setSim}
+            onCheckRow={checkRow}
           />
         ) : (
           <div className={styles.layout}>

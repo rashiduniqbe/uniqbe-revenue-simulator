@@ -13,7 +13,11 @@ import {
   sortRows,
   summarize,
 } from "../../../lib/simulation/table";
-import type { SimState } from "../../../lib/simulation/view-state";
+import {
+  checkRowQuery,
+  type CheckRowQuery,
+  type SimState,
+} from "../../../lib/simulation/view-state";
 import proto from "../proto.module.css";
 import { SimDetail } from "./SimDetail";
 import { SimFilters, type FilterPatch } from "./SimFilters";
@@ -33,6 +37,7 @@ interface SimulationViewProps {
   onScenarioChange: (next: ScenarioParams) => void;
   sim: SimState;
   onSimChange: (patch: Partial<SimState>) => void;
+  onCheckRow: (query: CheckRowQuery) => void;
 }
 
 // Phones get a card list and an in-place drawer instead of the table and side panel.
@@ -60,6 +65,7 @@ export function SimulationView({
   onScenarioChange,
   sim,
   onSimChange,
+  onCheckRow,
 }: SimulationViewProps) {
   const compact = useIsCompact();
   const { AUD, HKD } = rates;
@@ -123,19 +129,26 @@ export function SimulationView({
   const changeFilters = (patch: FilterPatch) => onSimChange({ ...patch, page: 1 });
   const clearFilters = () => onSimChange({ query: "", category: "all", gst: "all", page: 1 });
 
-  const detail = (row: SimRow, onClose?: () => void) =>
-    selectedItem && run.settings ? (
+  const detail = (row: SimRow, onClose?: () => void) => {
+    const solvedWith = run.settings;
+    if (!selectedItem || !solvedWith) return null;
+    const cell = row.cells[sim.rowPlatform];
+    return (
       <SimDetail
         row={row}
         item={selectedItem}
         platform={sim.rowPlatform}
-        settings={run.settings}
+        settings={solvedWith}
         ctx={ctx}
         thresholdLocal={rules.AU.deMinimisLocal}
         onPlatformChange={(rowPlatform) => onSimChange({ rowPlatform })}
         onClose={onClose}
+        onCheck={() => {
+          if (cell) onCheckRow(checkRowQuery(row.code, solvedWith, sim.rowPlatform, cell.price));
+        }}
       />
-    ) : null;
+    );
+  };
 
   return (
     <div className={styles.layout} data-testid="sim-view">
