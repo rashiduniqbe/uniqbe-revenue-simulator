@@ -109,7 +109,7 @@ function Tiles({ result, money }: { result: SimulationResult; money: (aud: strin
   );
 }
 
-function Notices({
+export function Notices({
   result,
   thresholdLocal,
   thresholdEquivalent,
@@ -143,7 +143,7 @@ function Notices({
   );
 }
 
-function Breakdown({
+export function Breakdown({
   result,
   money,
 }: {

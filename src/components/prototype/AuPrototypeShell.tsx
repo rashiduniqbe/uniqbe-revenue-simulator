@@ -21,6 +21,7 @@ import { ThemeToggle, useProtoTheme } from "./ThemeToggle";
 import { ProtoInputCard, type CostOverrides } from "./ProtoInputCard";
 import { ProtoResultCard } from "./ProtoResultCard";
 import { useSimUrlState, type View } from "../../lib/simulation/view-state";
+import { SimulationView } from "./simulation/SimulationView";
 import styles from "./proto.module.css";
 
 // Prototype-only URL state: the page currency (every money field and result is
@@ -50,7 +51,7 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   const setScenario = (next: ScenarioParams) => setRawScenario(pinAu(next));
   const [extra, setExtra] = useQueryStates(prototypeParsers);
   const theme = useProtoTheme();
-  const { view, setView } = useSimUrlState({
+  const { view, sim, setView, setSim } = useSimUrlState({
     p: rawScenario.productCode,
     sp: rawScenario.sellingPriceLocal,
   });
@@ -105,7 +106,17 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
           themeToggle={<ThemeToggle effective={theme.effective} onToggle={theme.toggle} />}
         />
         {view === "sim" ? (
-          <section aria-label="Simulation" data-testid="sim-view" />
+          <SimulationView
+            items={items}
+            rules={rules}
+            fx={fx}
+            rates={rates}
+            currency={currency}
+            scenario={scenario}
+            onScenarioChange={setScenario}
+            sim={sim}
+            onSimChange={setSim}
+          />
         ) : (
           <div className={styles.layout}>
             <ProtoInputCard
@@ -227,6 +238,7 @@ export function PrototypeError() {
       <div className={`${styles.card} ${styles.errorCard}`} role="alert">
         <h1 className={styles.title}>Price list unavailable</h1>
         <p>Couldn&rsquo;t load the price list from storeprice.uniqbe.com. Try again in a minute.</p>
+        <p>The simulation needs the Uniqbe price list.</p>
         <a className={styles.link} href="/">
           Reload
         </a>
