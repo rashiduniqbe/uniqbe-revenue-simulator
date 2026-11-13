@@ -467,3 +467,8 @@
     grid-column: span 2;
   }
 }
+
+/* View toggle in the header: Simulation | Calculator */
+.viewSeg .seg button {
+  padding: 0 14px;
+}

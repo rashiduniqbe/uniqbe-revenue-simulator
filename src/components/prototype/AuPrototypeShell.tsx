@@ -20,6 +20,7 @@ import { Segmented } from "./controls";
 import { ThemeToggle, useProtoTheme } from "./ThemeToggle";
 import { ProtoInputCard, type CostOverrides } from "./ProtoInputCard";
 import { ProtoResultCard } from "./ProtoResultCard";
+import { useSimUrlState, type View } from "../../lib/simulation/view-state";
 import styles from "./proto.module.css";
 
 // Prototype-only URL state: the page currency (every money field and result is
@@ -49,6 +50,10 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
   const setScenario = (next: ScenarioParams) => setRawScenario(pinAu(next));
   const [extra, setExtra] = useQueryStates(prototypeParsers);
   const theme = useProtoTheme();
+  const { view, setView } = useSimUrlState({
+    p: rawScenario.productCode,
+    sp: rawScenario.sellingPriceLocal,
+  });
   const currency: DisplayCurrency = extra.cur;
   const overrides: CostOverrides = { customCost: extra.cc, declaredValue: extra.dv };
   // Live USD→AUD for the engine; HKD is Uniqbe's fixed rate (see FIXED_HKD_PER_USD).
@@ -95,42 +100,53 @@ export function AuPrototypeShell({ items, skipped, fetchedAt, rules, fx }: AuPro
           skipped={skipped}
           currency={currency}
           onCurrencyChange={changeCurrency}
+          view={view}
+          onViewChange={setView}
           themeToggle={<ThemeToggle effective={theme.effective} onToggle={theme.toggle} />}
         />
-        <div className={styles.layout}>
-          <ProtoInputCard
-            items={items}
-            selectedItem={selectedItem}
-            onSelectProduct={selectProduct}
-            scenario={scenario}
-            onChange={setScenario}
-            rules={rules}
-            currency={currency}
-            rates={rates}
-            overrides={overrides}
-            onOverridesChange={(next) =>
-              void setExtra({
-                ...(next.customCost === undefined ? {} : { cc: next.customCost }),
-                ...(next.declaredValue === undefined ? {} : { dv: next.declaredValue }),
-              })
-            }
-          />
-          <ProtoResultCard
-            result={result}
-            currency={currency}
-            rates={rates}
-            thresholdLocal={rules.AU.deMinimisLocal}
-            onReset={() => {
-              setScenario({ ...DEFAULT_SCENARIO, market: "AU" });
-              void setExtra({ cc: "", dv: "" });
-            }}
-          />
-        </div>
+        {view === "sim" ? (
+          <section aria-label="Simulation" data-testid="sim-view" />
+        ) : (
+          <div className={styles.layout}>
+            <ProtoInputCard
+              items={items}
+              selectedItem={selectedItem}
+              onSelectProduct={selectProduct}
+              scenario={scenario}
+              onChange={setScenario}
+              rules={rules}
+              currency={currency}
+              rates={rates}
+              overrides={overrides}
+              onOverridesChange={(next) =>
+                void setExtra({
+                  ...(next.customCost === undefined ? {} : { cc: next.customCost }),
+                  ...(next.declaredValue === undefined ? {} : { dv: next.declaredValue }),
+                })
+              }
+            />
+            <ProtoResultCard
+              result={result}
+              currency={currency}
+              rates={rates}
+              thresholdLocal={rules.AU.deMinimisLocal}
+              onReset={() => {
+                setScenario({ ...DEFAULT_SCENARIO, market: "AU" });
+                void setExtra({ cc: "", dv: "" });
+              }}
+            />
+          </div>
+        )}
       </div>
       <ProtoDisclaimer />
     </div>
   );
 }
+
+const VIEW_OPTIONS = [
+  { value: "sim", label: "Simulation" },
+  { value: "calc", label: "Calculator" },
+] as const;
 
 function fxBadgeText(fx: FxSnapshotType): string {
   // "1 USD = 1.3950 AUD · rate as of 25 Aug 2026" → add the fixed HKD rate after AUD.
@@ -145,6 +161,8 @@ function ProtoHeader({
   skipped,
   currency,
   onCurrencyChange,
+  view,
+  onViewChange,
   themeToggle,
 }: {
   fx: FxSnapshotType;
@@ -152,6 +170,8 @@ function ProtoHeader({
   skipped: SkippedRow[];
   currency: DisplayCurrency;
   onCurrencyChange: (currency: DisplayCurrency) => void;
+  view: View;
+  onViewChange: (view: View) => void;
   themeToggle: ReactNode;
 }) {
   const currencyOptions = DISPLAY_CURRENCIES.map((value) => ({ value, label: value }));
@@ -166,6 +186,14 @@ function ProtoHeader({
         {skipped.length > 0 && ` · ${skipped.length} not listed (${skippedReasons})`}
       </span>
       <div className={styles.headControls}>
+        <Segmented
+          label="View"
+          hideLabel
+          className={styles.viewSeg}
+          options={VIEW_OPTIONS}
+          value={view}
+          onChange={onViewChange}
+        />
         <span className={`${styles.badge} ${styles.mono}`} data-testid="proto-fx-badge">
           {fxBadgeText(fx)}
           {fx.degraded && " · may be out of date"}
