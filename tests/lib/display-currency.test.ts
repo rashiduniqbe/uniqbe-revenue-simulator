@@ -85,3 +85,16 @@ describe("formatMoney", () => {
     expect(formatMoney("-12.30", "AUD")).toBe("−A$12.30");
   });
 });
+
+describe("toDisplay rounding up", () => {
+  it("rounds a converted amount up to the next cent when asked", () => {
+    // 100 AUD / 1.5 = 66.666… USD
+    expect(toDisplay("100", { AUD: 1.5 }, "USD")).toBe("66.67");
+    expect(toDisplay("100.01", { AUD: 1.5 }, "USD", "up")).toBe("66.68");
+    expect(toDisplay("99.99", { AUD: 1.5 }, "USD", "up")).toBe("66.66");
+  });
+
+  it("leaves an exact cent alone", () => {
+    expect(toDisplay("150", { AUD: 1.5 }, "USD", "up")).toBe("100.00");
+  });
+});

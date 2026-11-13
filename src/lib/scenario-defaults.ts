@@ -6,6 +6,7 @@ import type { ScenarioParams } from "./url-state";
 // and clears values that only apply to another platform: calculate() deducts
 // adSpendLocal on every platform, and ebayFreeTier / shopifyHasAbn only mean
 // something on their own platform, so leftovers would silently skew profit.
+// Ad spend is kept on the own-store platforms (see platformTakesAdSpend).
 export function withPlatform(
   scenario: ScenarioParams,
   platform: Platform,
@@ -18,10 +19,15 @@ export function withPlatform(
     referralFeePct: category
       ? deriveReferralFeeDefault(rules, scenario.market, platform, category)
       : scenario.referralFeePct,
-    adSpendLocal: platform === "shopify" ? scenario.adSpendLocal : "0.00",
+    adSpendLocal: platformTakesAdSpend(platform) ? scenario.adSpendLocal : "0.00",
     ebayFreeTier: platform === "ebay" ? scenario.ebayFreeTier : false,
     shopifyHasAbn: platform === "shopify" ? scenario.shopifyHasAbn : false,
   };
+}
+
+// Own-store platforms bring no marketplace traffic, so ad spend is an input there.
+export function platformTakesAdSpend(platform: Platform): boolean {
+  return platform === "shopify" || platform === "woocommerce";
 }
 
 export function deriveDutyPctDefault(

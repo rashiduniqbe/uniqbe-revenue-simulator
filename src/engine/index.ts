@@ -7,6 +7,7 @@ import { computeAmazonFees } from "./platforms/amazon";
 import { computeEbayFees } from "./platforms/ebay";
 import { computeShopifyFees } from "./platforms/shopify";
 import { computeOtherFees } from "./platforms/other";
+import { computeWooCommerceFees } from "./platforms/woocommerce";
 import { verdict } from "./verdict";
 import { emitWarnings } from "./warnings";
 import type { FxInput, SimulationInput, SimulationResult, BreakdownLine } from "./types";
@@ -94,6 +95,9 @@ export function calculate(
         marketRules.platforms.shopify,
         input.shopifyPlan,
       );
+      break;
+    case "woocommerce":
+      platformFees = computeWooCommerceFees(sellingPriceGross, marketRules.platforms.woocommerce);
       break;
     case "other":
       platformFees = computeOtherFees();
@@ -190,8 +194,12 @@ export function calculate(
   return result;
 }
 
-const MAX_NUDGE_STEPS = 25;
 const NUDGE_STEP = new Decimal("0.01");
+const MIN_PRICE = new Decimal("0.01");
+// Spec §7.5's bounded correction: one-cent steps up from the seed.
+const LINEAR_NUDGE_STEPS = 25;
+// Doubling steps after that: 2^48 cents is far beyond any real price.
+const MAX_GALLOP_STEPS = 48;
 
 export function suggestPrice(
   input: Omit<SimulationInput, "sellingPriceLocal">,
@@ -287,6 +295,12 @@ export function suggestPrice(
       fixedCosts = new Decimal(plan.fixed);
       break;
     }
+    case "woocommerce": {
+      const { pct, fixed } = marketRules.platforms.woocommerce.payments;
+      fEff = new Decimal(pct).div(100).times(new Decimal(1).plus(feeTaxRate));
+      fixedCosts = new Decimal(fixed);
+      break;
+    }
     case "other":
       fEff = new Decimal(0);
       fixedCosts = new Decimal(0);
@@ -301,19 +315,59 @@ export function suggestPrice(
     return null;
   }
 
-  let price = r2(fixedCosts.plus(landed).div(denominator));
-  let steps = 0;
-
-  while (steps < MAX_NUDGE_STEPS) {
+  const seed = Decimal.max(r2(fixedCosts.plus(landed).div(denominator)), MIN_PRICE);
+  const meets = (price: Decimal): boolean => {
     const result = calculate({ ...input, sellingPriceLocal: price.toFixed(2) }, fx, rules);
-    const marginOk = new Decimal(result.marginPct).gte(targetMarginPct);
-    const profitOk = new Decimal(result.netProfit).gte(0);
-    if (marginOk && profitOk) {
-      return { price: price.toFixed(2), steps };
-    }
-    price = price.plus(NUDGE_STEP);
-    steps += 1;
+    return (
+      new Decimal(result.marginPct).gte(targetMarginPct) && new Decimal(result.netProfit).gte(0)
+    );
+  };
+
+  // Spec §7.5: nudge upward from the seed one cent at a time. The answer is
+  // the first qualifying cent at or above the seed (golden SV cases pin this).
+  for (let steps = 0; steps < LINEAR_NUDGE_STEPS; steps += 1) {
+    const price = seed.plus(NUDGE_STEP.times(steps));
+    if (meets(price)) return { price: price.toFixed(2), steps };
   }
 
+  // Rounding, the eBay tier or the de minimis line can push the answer past
+  // the linear nudge. Returning null there would hide a price that exists, so
+  // gallop upward in doubling steps, then bisect back to the first cent.
+  const lastMiss = seed.plus(NUDGE_STEP.times(LINEAR_NUDGE_STEPS - 1));
+  const hit = gallopUp(lastMiss, meets);
+  if (hit === null) return null;
+  const price = bisectToCent(hit.miss, hit.hit, meets);
+  return { price: price.toFixed(2), steps: price.minus(seed).div(NUDGE_STEP).toNumber() };
+}
+
+function gallopUp(
+  from: Decimal,
+  meets: (price: Decimal) => boolean,
+): { miss: Decimal; hit: Decimal } | null {
+  let miss = from;
+  let gap = NUDGE_STEP;
+  for (let i = 0; i < MAX_GALLOP_STEPS; i += 1) {
+    const higher = from.plus(gap);
+    if (meets(higher)) return { miss, hit: higher };
+    miss = higher;
+    gap = gap.times(2);
+  }
   return null;
+}
+
+// Narrows a (miss, hit] range to adjacent cents and returns the hit.
+function bisectToCent(
+  missIn: Decimal,
+  hitIn: Decimal,
+  meets: (price: Decimal) => boolean,
+): Decimal {
+  let miss = missIn;
+  let hit = hitIn;
+  while (hit.minus(miss).gt(NUDGE_STEP)) {
+    const mid = r2(miss.plus(hit).div(2));
+    const probe = mid.eq(miss) ? miss.plus(NUDGE_STEP) : mid;
+    if (meets(probe)) hit = probe;
+    else miss = probe;
+  }
+  return hit;
 }

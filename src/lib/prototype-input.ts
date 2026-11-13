@@ -4,6 +4,7 @@ import type { CatalogueItemType, MarketRulesType } from "./schemas";
 import type { ScenarioParams } from "./url-state";
 import { isValidDecimalString } from "./decimal-validation";
 import { resolveSimulationInput } from "./simulate-input";
+import { platformTakesAdSpend } from "./scenario-defaults";
 import { toAud, type DisplayCurrency } from "./display-currency";
 
 type Rates = { AUD: number; HKD?: number };
@@ -34,7 +35,9 @@ export function buildPrototypeInput(
       sellingPriceLocal: toEngine(scenario.sellingPriceLocal),
       inboundShippingLocal: toEngine(scenario.inboundShippingLocal),
       packagingLocal: toEngine(scenario.packagingLocal),
-      adSpendLocal: toEngine(scenario.adSpendLocal),
+      // The ad-spend field only shows on own-store platforms. A value left in
+      // the URL (e.g. shared with the simulation) must not be deducted unseen.
+      adSpendLocal: platformTakesAdSpend(scenario.platform) ? toEngine(scenario.adSpendLocal) : "0",
     },
     item,
     rules,
