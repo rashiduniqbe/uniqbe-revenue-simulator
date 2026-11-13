@@ -1,16 +1,23 @@
-import Fuse from "fuse.js";
+export interface Searchable {
+  code: string;
+  search: string;
+}
 
-const FUSE_OPTIONS = {
-  keys: ["search"],
-  threshold: 0.4,
-  ignoreLocation: true,
-};
-
-export function filterProducts<T extends { search: string }>(items: T[], query: string): T[] {
-  const trimmed = query.trim();
-  if (!trimmed) {
-    return items;
+// Strict, predictable matching: every word typed must appear somewhere in the
+// product's SKU or search text. No fuzzy matching — a near-miss query used to
+// pull in unrelated products (e.g. "galaxy s25" matched Galaxy A37s).
+export function filterProducts<T extends Searchable>(items: readonly T[], query: string): T[] {
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) {
+    return [...items];
   }
-  const fuse = new Fuse(items, FUSE_OPTIONS);
-  return fuse.search(trimmed).map((result) => result.item);
+
+  const matches = items.filter((item) => {
+    const haystack = `${item.code} ${item.search}`.toLowerCase();
+    return tokens.every((token) => haystack.includes(token));
+  });
+
+  // An exact SKU hit goes first; everything else keeps catalogue order.
+  const isExactCode = (item: T) => tokens.includes(item.code.toLowerCase());
+  return [...matches.filter(isExactCode), ...matches.filter((item) => !isExactCode(item))];
 }
