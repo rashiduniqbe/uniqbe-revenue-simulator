@@ -6,6 +6,7 @@ import type { ScenarioParams } from "../../../lib/url-state";
 import { fxInputFor } from "../../../lib/compare";
 import { formatMoney, type DisplayCurrency } from "../../../lib/display-currency";
 import type { SimContext, SimRow, SimSettings } from "../../../lib/simulation/simulate";
+import { rowsCurrency } from "../../../lib/simulation/run-state";
 import {
   categoryOptions,
   filterRows,
@@ -93,6 +94,8 @@ export function SimulationView({
   );
   const run = useSimulationRows(items, settings, ctx);
   const allRows = useMemo(() => run.rows ?? [], [run.rows]);
+  // Rows stay in the currency they were solved in until the next run lands.
+  const shownCurrency = rowsCurrency(run, currency);
 
   const shown = useMemo(
     () =>
@@ -172,7 +175,7 @@ export function SimulationView({
             <SimSummary
               summary={summary}
               shown={shown.length}
-              currency={currency}
+              currency={shownCurrency}
               thresholdText={thresholdText}
             />
             <SimFilters
@@ -196,7 +199,7 @@ export function SimulationView({
               <>
                 <SimTable
                   rows={page.rows}
-                  currency={currency}
+                  currency={shownCurrency}
                   targetMarginPct={run.settings?.targetMarginPct ?? sim.targetMarginPct}
                   thresholdText={thresholdText}
                   selection={selection}

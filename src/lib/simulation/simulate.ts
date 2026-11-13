@@ -3,7 +3,6 @@ import { calculate, suggestPrice } from "../../engine";
 import type { FxInput, SimulationInput, SimulationResult } from "../../engine/types";
 import type { LiveItemType, MarketRulesType } from "../schemas";
 import { DEFAULT_SCENARIO, type ScenarioParams } from "../url-state";
-import { platformTakesAdSpend } from "../scenario-defaults";
 import { buildPrototypeInput } from "../prototype-input";
 import { isValidDecimalString } from "../decimal-validation";
 import { toDisplay, type DisplayCurrency } from "../display-currency";
@@ -74,7 +73,9 @@ const DISPLAY_CENT = new Decimal("0.01");
  * The calculator scenario a cell stands for, in the display currency. The row
  * action writes exactly these values to the URL, so the calculator rebuilds
  * the same input. Duty and referral fee stay blank: the calculator fills the
- * category defaults, as it does for any product.
+ * category defaults, as it does for any product. Ad spend is kept on every
+ * platform: buildPrototypeInput only deducts it on Shopify and WooCommerce,
+ * and keeping it means switching back to the simulation does not lose it.
  */
 export function cellScenario(
   item: Pick<SimItem, "code">,
@@ -91,7 +92,7 @@ export function cellScenario(
     sellingPriceLocal: price,
     inboundShippingLocal: settings.inboundShipping,
     packagingLocal: settings.packaging,
-    adSpendLocal: platformTakesAdSpend(platform) ? settings.adSpend : "0.00",
+    adSpendLocal: settings.adSpend,
   };
 }
 

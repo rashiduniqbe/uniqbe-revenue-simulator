@@ -146,6 +146,7 @@ export type CheckRowQuery = {
   et: false;
   cc: "";
   dv: "";
+  cur: SimSettings["currency"];
 };
 
 /**
@@ -153,7 +154,8 @@ export type CheckRowQuery = {
  * (cellScenario), so the calculator rebuilds the same input and shows the
  * same profit to the cent. Leftovers from an earlier calculator session —
  * typed duty or referral fee, a custom cost or declared value, other plans —
- * are cleared, because the simulation did not use them. cur is kept.
+ * are cleared, because the simulation did not use them. cur is the currency
+ * the row was solved in, which may lag the page just after a currency switch.
  */
 export function checkRowQuery(
   code: string,
@@ -180,5 +182,6 @@ export function checkRowQuery(
     et: false,
     cc: "",
     dv: "",
+    cur: settings.currency,
   };
 }

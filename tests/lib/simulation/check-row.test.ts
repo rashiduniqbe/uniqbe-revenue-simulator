@@ -36,8 +36,9 @@ const settings = (over: Partial<SimSettings> = {}): SimSettings => ({
 // Writes the query the way nuqs would (every value as a string) over a URL
 // that already carries leftovers from an earlier calculator session.
 function urlAfterCheck(query: Record<string, string | boolean>): URLSearchParams {
+  // cur=USD is stale: the page switched currency before the rows caught up.
   const params = new URLSearchParams(
-    "m=UK&du=7&rf=15&ap=individual&shp=grow&abn=true&et=true&cc=999&dv=1",
+    "m=UK&du=7&rf=15&ap=individual&shp=grow&abn=true&et=true&cc=999&dv=1&cur=USD",
   );
   for (const [key, value] of Object.entries(query)) {
     if (value === "") params.delete(key);
@@ -52,9 +53,13 @@ describe("checkRowQuery", () => {
     expect(q).toMatchObject({ v: "calc", m: "AU", p: "AP00001", pl: "ebay", sp: "1234.56" });
   });
 
-  it("carries ad spend only to Shopify and WooCommerce", () => {
-    expect(checkRowQuery("AP00001", settings(), "amazon", "10").ad).toBe("0.00");
+  it("keeps the simulation's ad spend on every platform (the calculator ignores it off Shopify and WooCommerce)", () => {
+    expect(checkRowQuery("AP00001", settings(), "amazon", "10").ad).toBe("30.00");
     expect(checkRowQuery("AP00001", settings(), "woocommerce", "10").ad).toBe("30.00");
+  });
+
+  it("writes the currency the row was solved in", () => {
+    expect(checkRowQuery("AP00001", settings({ currency: "HKD" }), "ebay", "10").cur).toBe("HKD");
   });
 
   it("clears overrides and plan choices the simulation does not use", () => {
@@ -84,7 +89,8 @@ describe("checkRowQuery", () => {
         expect(resolveView(url)).toBe("calc");
         const scenario = { ...decodeScenario(url), market: "AU" as const };
         const overrides = { customCost: url.get("cc") ?? "", declaredValue: url.get("dv") ?? "" };
-        const input = buildPrototypeInput(scenario, item, rules, currency, rates, overrides);
+        const urlCurrency = (url.get("cur") ?? "USD") as DisplayCurrency;
+        const input = buildPrototypeInput(scenario, item, rules, urlCurrency, rates, overrides);
         const r = calculate(input!, ctx.fx, rules);
         expect(toDisplay(r.netProfit, rates, currency)).toBe(cell.netProfit);
         expect(r.marginPct).toBe(cell.marginPct);

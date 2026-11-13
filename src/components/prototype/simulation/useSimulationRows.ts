@@ -1,27 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import {
   areSettingsUsable,
   simulateCatalogue,
   type SimContext,
   type SimItem,
-  type SimRow,
   type SimSettings,
 } from "../../../lib/simulation/simulate";
+import { INITIAL_RUN, simRunReducer, type RunState } from "../../../lib/simulation/run-state";
 import type { SimRequest, SimResponse } from "./sim.worker";
 
 // Typing in a cost field should not start a full run on every keystroke.
 const SETTINGS_DEBOUNCE_MS = 250;
 
-export type SimulationRows = {
-  rows: SimRow[] | null;
-  // The settings the rows were solved with.
-  settings: SimSettings | null;
-  pending: boolean;
-  invalid: boolean;
-  failed: boolean;
-};
+export type SimulationRows = RunState;
 
 function useDebounced<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -32,10 +25,13 @@ function useDebounced<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
+type Job = { id: number; settings: SimSettings };
+
 /**
  * Simulates the catalogue in a Web Worker whenever the settings settle. The
  * previous rows stay on screen (pending: true) until the new ones arrive, and
- * unusable settings keep them too (invalid: true).
+ * unusable settings keep them too (invalid: true). If the worker cannot run,
+ * the work moves to the main thread instead of leaving the table waiting.
  */
 export function useSimulationRows(
   items: readonly SimItem[],
@@ -43,73 +39,68 @@ export function useSimulationRows(
   ctx: SimContext,
 ): SimulationRows {
   const settingsKey = useDebounced(JSON.stringify(settings), SETTINGS_DEBOUNCE_MS);
-  const [state, setState] = useState<SimulationRows>({
-    rows: null,
-    settings: null,
-    pending: true,
-    invalid: false,
-    failed: false,
-  });
+  const [state, dispatch] = useReducer(simRunReducer, INITIAL_RUN);
   const workerRef = useRef<Worker | null>(null);
-  const latestId = useRef(0);
-  const requested = useRef<SimSettings | null>(null);
+  // Every request or invalid entry gets the next id; only its reply may land.
+  const nextId = useRef(0);
+  const latestJob = useRef<Job | null>(null);
+  const inputs = useRef({ items, ctx });
+  inputs.current = { items, ctx };
+
+  // Main-thread run, after this paint: no worker support, or the worker failed.
+  const runOnMainThread = useRef((job: Job): (() => void) => {
+    const timer = setTimeout(() => {
+      try {
+        const rows = simulateCatalogue(inputs.current.items, job.settings, inputs.current.ctx);
+        dispatch(
+          rows === null ? { type: "invalid", id: job.id } : { type: "result", id: job.id, rows },
+        );
+      } catch {
+        dispatch({ type: "failed", id: job.id });
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }).current;
 
   useEffect(() => {
     if (typeof Worker === "undefined") return;
     const worker = new Worker(new URL("./sim.worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = (event: MessageEvent<SimResponse>) => {
       const reply = event.data;
-      if (reply.id !== latestId.current) return;
-      setState((prev) =>
-        reply.ok
-          ? reply.rows === null
-            ? { ...prev, pending: false, invalid: true }
-            : {
-                rows: reply.rows,
-                settings: requested.current,
-                pending: false,
-                invalid: false,
-                failed: false,
-              }
-          : { ...prev, pending: false, failed: true },
-      );
+      if (!reply.ok) dispatch({ type: "failed", id: reply.id });
+      else if (reply.rows === null) dispatch({ type: "invalid", id: reply.id });
+      else dispatch({ type: "result", id: reply.id, rows: reply.rows });
     };
-    worker.onerror = () => setState((prev) => ({ ...prev, pending: false, failed: true }));
+    // The worker could not load or crashed: drop it and finish on the main thread.
+    worker.onerror = () => {
+      worker.terminate();
+      if (workerRef.current === worker) workerRef.current = null;
+      if (latestJob.current) runOnMainThread(latestJob.current);
+    };
     workerRef.current = worker;
     return () => {
       worker.terminate();
-      workerRef.current = null;
+      if (workerRef.current === worker) workerRef.current = null;
     };
-  }, []);
+  }, [runOnMainThread]);
 
   useEffect(() => {
     const next = JSON.parse(settingsKey) as SimSettings;
+    nextId.current += 1;
+    const id = nextId.current;
     if (!areSettingsUsable(next)) {
-      setState((prev) => ({ ...prev, pending: false, invalid: true }));
+      latestJob.current = null;
+      dispatch({ type: "invalid", id });
       return;
     }
-    latestId.current += 1;
-    const id = latestId.current;
-    requested.current = next;
-    setState((prev) => ({ ...prev, pending: true, invalid: false }));
+    dispatch({ type: "request", id, settings: next });
+    const job: Job = { id, settings: next };
+    latestJob.current = job;
     const worker = workerRef.current;
-    if (worker) {
-      const request: SimRequest = { id, items: [...items], settings: next, ctx };
-      worker.postMessage(request);
-      return;
-    }
-    // No worker support: compute on the main thread, after this paint.
-    const timer = setTimeout(() => {
-      if (id !== latestId.current) return;
-      const rows = simulateCatalogue(items, next, ctx);
-      setState((prev) =>
-        rows === null
-          ? { ...prev, pending: false, invalid: true }
-          : { rows, settings: next, pending: false, invalid: false, failed: false },
-      );
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [settingsKey, items, ctx]);
+    if (!worker) return runOnMainThread(job);
+    const request: SimRequest = { id, items: [...items], settings: next, ctx };
+    worker.postMessage(request);
+  }, [settingsKey, items, ctx, runOnMainThread]);
 
   return state;
 }
