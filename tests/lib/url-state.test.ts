@@ -60,3 +60,9 @@ describe("encodeScenario / decodeScenario", () => {
     expect(params.get("abn")).toBe("true");
   });
 });
+
+describe("pl=woocommerce", () => {
+  it("decodes woocommerce as a platform", () => {
+    expect(decodeScenario(new URLSearchParams("pl=woocommerce")).platform).toBe("woocommerce");
+  });
+});

@@ -7,6 +7,7 @@ import { computeAmazonFees } from "./platforms/amazon";
 import { computeEbayFees } from "./platforms/ebay";
 import { computeShopifyFees } from "./platforms/shopify";
 import { computeOtherFees } from "./platforms/other";
+import { computeWooCommerceFees } from "./platforms/woocommerce";
 import { verdict } from "./verdict";
 import { emitWarnings } from "./warnings";
 import type { FxInput, SimulationInput, SimulationResult, BreakdownLine } from "./types";
@@ -94,6 +95,9 @@ export function calculate(
         marketRules.platforms.shopify,
         input.shopifyPlan,
       );
+      break;
+    case "woocommerce":
+      platformFees = computeWooCommerceFees(sellingPriceGross, marketRules.platforms.woocommerce);
       break;
     case "other":
       platformFees = computeOtherFees();
@@ -285,6 +289,12 @@ export function suggestPrice(
       const plan = marketRules.platforms.shopify.payments[input.shopifyPlan];
       fEff = new Decimal(plan.pct).div(100).times(new Decimal(1).plus(feeTaxRate));
       fixedCosts = new Decimal(plan.fixed);
+      break;
+    }
+    case "woocommerce": {
+      const { pct, fixed } = marketRules.platforms.woocommerce.payments;
+      fEff = new Decimal(pct).div(100).times(new Decimal(1).plus(feeTaxRate));
+      fixedCosts = new Decimal(fixed);
       break;
     }
     case "other":

@@ -36,6 +36,15 @@ export const WARNING_COPY: Record<WarningCode, { message: string; alwaysVisible:
     message: "Without an ABN on file, 10% GST is added to your Shopify subscription itself.",
     alwaysVisible: false,
   },
+  WOOCOMMERCE_NO_AUDIENCE: {
+    message:
+      "WooCommerce has no built-in marketplace traffic — a $0 ad budget is unrealistic here.",
+    alwaysVisible: false,
+  },
+  WOOCOMMERCE_PAYMENT_RATE_ASSUMED: {
+    message: "Uses the standard WooPayments card rate; your gateway may charge differently.",
+    alwaysVisible: true,
+  },
   NOT_TAX_ADVICE: {
     message: "This is an estimate, not tax advice.",
     alwaysVisible: true,
@@ -55,7 +64,9 @@ const PRIORITY: Record<WarningCode, number> = {
   AU_NEAR_THRESHOLD: 5,
   SHOPIFY_NO_AUDIENCE: 6,
   SHOPIFY_AU_GST_ON_SUB: 7,
-  NOT_TAX_ADVICE: 8,
+  WOOCOMMERCE_NO_AUDIENCE: 8,
+  WOOCOMMERCE_PAYMENT_RATE_ASSUMED: 9,
+  NOT_TAX_ADVICE: 10,
 };
 
 export function sortWarningsByPriority(warnings: EngineWarning[]): EngineWarning[] {
