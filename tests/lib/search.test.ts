@@ -34,6 +34,64 @@ describe("filterProducts", () => {
     expect(codes).not.toContain("TT00003");
   });
 
+  describe("SKU and keyword matching", () => {
+    const makePhone = (code: string, name: string): CatalogueItemType => ({
+      code,
+      brand: "Test",
+      name,
+      categoryRaw: "mobile phone",
+      category: "mobile-phone",
+      categoryLabel: "Mobile Phone",
+      usd: 1000,
+      hkdRef: 7800,
+      storageGb: null,
+      search: `${name.toLowerCase()} mobile phone`,
+    });
+    const items = [
+      makePhone("TT13690", "Apple iPhone 17 Pro Single Sim + eSim 512GB (Deep Blue) HK Spec"),
+      makePhone("TT13693", "Apple iPhone 17 Pro Single Sim + eSim 1TB (Deep Blue) HK Spec"),
+      makePhone(
+        "TT04447",
+        "Galaxy S25 Ultra S938B Dual Sim 12GB RAM 256GB 5G (Titanium Silver Blue)",
+      ),
+      makePhone("TT04900", "Galaxy A37 A376B Dual Sim 8GB RAM 128GB 5G (Awesome Charcoal)"),
+    ];
+    const codesFor = (query: string) => filterProducts(items, query).map((item) => item.code);
+
+    it("finds an item by its exact SKU, ignoring case", () => {
+      expect(codesFor("TT13693")).toEqual(["TT13693"]);
+      expect(codesFor("tt13693")).toEqual(["TT13693"]);
+    });
+
+    it("finds items by a SKU prefix", () => {
+      expect(codesFor("TT136")).toEqual(["TT13690", "TT13693"]);
+    });
+
+    it("ranks an exact SKU match first", () => {
+      const ranked = [items[0]!, { ...items[1]!, search: `${items[1]!.search} tt13690` }];
+      expect(filterProducts(ranked, "TT13693").map((item) => item.code)[0]).toBe("TT13693");
+      const reversed = [...ranked].reverse();
+      expect(filterProducts(reversed, "TT13690").map((item) => item.code)).toEqual([
+        "TT13690",
+        "TT13693",
+      ]);
+    });
+
+    it("requires every word of the query to appear", () => {
+      expect(codesFor("galaxy s25")).toEqual(["TT04447"]);
+    });
+
+    it("finds a pasted full product name without its sibling variants", () => {
+      expect(codesFor("Apple iPhone 17 Pro Single Sim + eSim 1TB (Deep Blue)")).toEqual([
+        "TT13693",
+      ]);
+    });
+
+    it("returns nothing for a misspelt word", () => {
+      expect(codesFor("iphnoe")).toEqual([]);
+    });
+  });
+
   it("returns no results for a query that matches nothing in the catalogue", () => {
     expect(filterProducts(catalogue.items, "zzzznonexistentproductzzzz")).toEqual([]);
   });

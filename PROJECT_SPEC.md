@@ -35,7 +35,7 @@
     "components": "shadcn-ui (radix primitives, copied into repo, not a dependency)",
     "validation": "zod@3",
     "money": "decimal.js@10",
-    "search": "fuse.js@7",
+    "search": "strict token match (no library)",
     "state": "nuqs@2 (URL search params as the single source of scenario state)",
     "unitTests": "vitest@2",
     "e2e": "@playwright/test@1",
@@ -995,7 +995,7 @@ Each ticket is independently committable with its own acceptance criterion.
 | ID | Ticket | Acceptance |
 |---|---|---|
 | T-19 | App shell, layout, `<FxBadge />`, sticky `<DisclaimerBar />` | Both render on every route showing a converted price |
-| T-20 | `<ProductPicker />` — Fuse.js over the loaded catalogue, size read from the data | Typing "nord 512" surfaces both Nord 6 512GB variants in under 50 ms; works unchanged on a catalogue of 200 or 400 |
+| T-20 | `<ProductPicker />` — strict token match (name or SKU) over the loaded catalogue, size read from the data | Typing "nord 512" surfaces both Nord 6 512GB variants in under 50 ms; works unchanged on a catalogue of 200 or 400 |
 | T-21 | `<InputPanel />` + nuqs URL binding | Reload restores the full scenario; back button works |
 | T-22 | `<BreakdownTable />` — tabular figures, aligned decimals | Displayed rows sum to the displayed total, always |
 | T-23 | `<VerdictCard />` + cost waterfall | Loss inverts the profit segment; row hover highlights its segment |
