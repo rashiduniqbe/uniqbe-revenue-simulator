@@ -120,3 +120,31 @@ describe("isDeclaredBelowPrice", () => {
     expect(isDeclaredBelowPrice({ customCost: "x", declaredValue: "50" }, "100.00")).toBe(true);
   });
 });
+
+describe("buildPrototypeInput ad spend", () => {
+  it("ignores ad spend on a platform with no ad-spend field", () => {
+    const input = buildPrototypeInput(
+      { ...scenario, platform: "amazon", adSpendLocal: "40" },
+      item,
+      rules,
+      "AUD",
+      rates,
+      noOverrides,
+    );
+    expect(input?.adSpendLocal).toBe("0");
+  });
+
+  it("keeps ad spend on Shopify and WooCommerce", () => {
+    for (const platform of ["shopify", "woocommerce"] as const) {
+      const input = buildPrototypeInput(
+        { ...scenario, platform, adSpendLocal: "40" },
+        item,
+        rules,
+        "AUD",
+        rates,
+        noOverrides,
+      );
+      expect(input?.adSpendLocal).toBe("40");
+    }
+  });
+});

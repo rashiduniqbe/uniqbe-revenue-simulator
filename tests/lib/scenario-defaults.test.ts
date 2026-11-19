@@ -70,3 +70,18 @@ describe("deriveReferralFeeDefault", () => {
     expect(deriveReferralFeeDefault(rules, "AU", "other", "mobile-phone")).toBe("0");
   });
 });
+
+describe("withPlatform on WooCommerce", () => {
+  const base = { ...DEFAULT_SCENARIO, market: "AU" as const, adSpendLocal: "12.50" };
+
+  it("keeps ad spend when switching to WooCommerce", () => {
+    const next = withPlatform({ ...base, platform: "shopify" }, "woocommerce", rules, null);
+    expect(next.adSpendLocal).toBe("12.50");
+    expect(next.shopifyHasAbn).toBe(false);
+  });
+
+  it("uses WooCommerce's referral default (none) for a known category", () => {
+    const next = withPlatform(base, "woocommerce", rules, "mobile-phone");
+    expect(next.referralFeePct).toBe("0");
+  });
+});

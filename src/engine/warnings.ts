@@ -43,6 +43,14 @@ export function emitWarnings(ctx: EngineContext): EngineWarning[] {
     warnings.push({ code: "SHOPIFY_AU_GST_ON_SUB" });
   }
 
+  if (ctx.platform === "woocommerce" && ctx.adSpend.eq(0)) {
+    warnings.push({ code: "WOOCOMMERCE_NO_AUDIENCE" });
+  }
+
+  if (ctx.platform === "woocommerce") {
+    warnings.push({ code: "WOOCOMMERCE_PAYMENT_RATE_ASSUMED" });
+  }
+
   warnings.push({ code: "NOT_TAX_ADVICE" });
 
   return warnings;

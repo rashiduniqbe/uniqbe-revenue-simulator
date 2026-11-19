@@ -16,11 +16,16 @@ type DisplayRates = { AUD: number; HKD?: number };
 // daily rate. Change it here only on Uniqbe's instruction.
 export const FIXED_HKD_PER_USD = 7.845;
 
-/** Converts an AUD decimal string to `target`, 2 dp, or null when the rate is missing. */
+/**
+ * Converts an AUD decimal string to `target`, 2 dp, or null when the rate is missing.
+ * Rounds half-up, or up to the next cent with `rounding: "up"` (a price that
+ * must not fall below the AUD amount).
+ */
 export function toDisplay(
   amountAud: string,
   rates: DisplayRates,
   target: DisplayCurrency,
+  rounding: "half-up" | "up" = "half-up",
 ): string | null {
   const aud = new Decimal(amountAud);
   let converted: Decimal;
@@ -35,7 +40,8 @@ export function toDisplay(
       converted = usd.mul(new Decimal(rates.HKD));
     }
   }
-  return converted.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2);
+  const mode = rounding === "up" ? Decimal.ROUND_UP : Decimal.ROUND_HALF_UP;
+  return converted.toDecimalPlaces(2, mode).toFixed(2);
 }
 
 // Enough precision that a typed amount survives AUD and back at 2 dp.

@@ -6,7 +6,9 @@ export type ScenarioParams = Omit<SimulationInput, "usd" | "category">;
 export const scenarioParsers = {
   m: parseAsStringEnum(["UK", "AU"] as const).withDefault("UK"),
   p: parseAsString.withDefault(""),
-  pl: parseAsStringEnum(["amazon", "ebay", "shopify", "other"] as const).withDefault("amazon"),
+  pl: parseAsStringEnum(["amazon", "ebay", "shopify", "woocommerce", "other"] as const).withDefault(
+    "amazon",
+  ),
   reg: parseAsBoolean.withDefault(false),
   sp: parseAsString.withDefault(""),
   sh: parseAsString.withDefault("0.00"),

@@ -98,6 +98,19 @@ export const ShopifyFees = z.object({
 });
 export type ShopifyFeesType = z.infer<typeof ShopifyFees>;
 
+// A self-hosted store: no marketplace commission, only the payment gateway's
+// per-transaction fee (WooPayments by default). monthlyFeeLocal is kept for
+// display only; hosting varies, so nothing monthly is deducted per unit.
+export const WooCommerceFees = z.object({
+  referralFeePctDefault: z.number(),
+  payments: ShopifyPlanFee,
+  monthlyFeeLocal: z.number(),
+  feesAreTaxable: z.boolean(),
+  requiresAdSpendInput: z.boolean(),
+  paymentsNote: z.string(),
+});
+export type WooCommerceFeesType = z.infer<typeof WooCommerceFees>;
+
 export const OtherFees = z.object({
   referralFeePctDefault: z.number(),
   feesAreTaxable: z.literal(false),
@@ -121,6 +134,7 @@ const MarketBlock = z.object({
     amazon: AmazonFees,
     ebay: EbayFees,
     shopify: ShopifyFees,
+    woocommerce: WooCommerceFees,
     other: OtherFees,
   }),
 });

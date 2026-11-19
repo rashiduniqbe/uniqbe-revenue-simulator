@@ -1,7 +1,7 @@
 import type { CategorySlugType } from "../lib/schemas";
 
 export type Market = "UK" | "AU";
-export type Platform = "amazon" | "ebay" | "shopify" | "other";
+export type Platform = "amazon" | "ebay" | "shopify" | "woocommerce" | "other";
 
 export type WarningCode =
   | "AU_BELOW_THRESHOLD"
@@ -12,6 +12,8 @@ export type WarningCode =
   | "DOORSTEP_LIABILITY"
   | "SHOPIFY_NO_AUDIENCE"
   | "SHOPIFY_AU_GST_ON_SUB"
+  | "WOOCOMMERCE_NO_AUDIENCE"
+  | "WOOCOMMERCE_PAYMENT_RATE_ASSUMED"
   | "NOT_TAX_ADVICE";
 
 export type EngineWarning = {

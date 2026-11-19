@@ -8,6 +8,7 @@ import { filterProducts } from "../../lib/search";
 import {
   deriveDutyPctDefault,
   deriveReferralFeeDefault,
+  platformTakesAdSpend,
   withPlatform,
 } from "../../lib/scenario-defaults";
 import { formatMoney, toAud, toDisplay, type DisplayCurrency } from "../../lib/display-currency";
@@ -28,6 +29,7 @@ const PLATFORM_OPTIONS = [
   { value: "amazon", label: "Amazon" },
   { value: "ebay", label: "eBay" },
   { value: "shopify", label: "Shopify" },
+  { value: "woocommerce", label: "WooCommerce" },
   { value: "other", label: "Other" },
 ] as const;
 
@@ -125,6 +127,7 @@ export function ProtoInputCard({
         <h2 className={styles.sectionTitle}>Selling</h2>
         <Segmented
           label="Platform"
+          className={styles.platformSeg}
           options={PLATFORM_OPTIONS}
           value={scenario.platform}
           onChange={(platform: Platform) =>
@@ -155,7 +158,7 @@ export function ProtoInputCard({
             onChange={(v) => set("packagingLocal", v)}
           />
         </div>
-        {scenario.platform === "shopify" && (
+        {platformTakesAdSpend(scenario.platform) && (
           <MoneyField
             id="proto-ad-spend"
             label={`Ad spend per sale (${currency})`}

@@ -36,6 +36,8 @@ vi.mock("nuqs", async (importOriginal) => ({
       shp: "basic",
       abn: false,
       et: false,
+      // The calculator view (the page defaults to the simulation).
+      v: "calc",
       // Prototype-only keys (currency, custom price, declared value).
       cur: "USD",
       cc: "",

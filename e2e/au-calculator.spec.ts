@@ -11,7 +11,7 @@ const currencyButton = (page: import("@playwright/test").Page, code: string) =>
 test("AU calculator: USD by default, every field and result follows the currency", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?v=calc");
   await expect(page.getByTestId("proto-fx-badge")).toContainText(/1 USD = .* AUD/);
   await expect(page.getByRole("note")).toContainText("not by this tool");
 
@@ -39,7 +39,7 @@ test("AU calculator: USD by default, every field and result follows the currency
 });
 
 test("AU calculator: custom price and declared value change the result", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/?v=calc");
   await page.getByLabel("Product").fill("iphone");
   await page.getByRole("button", { name: /US\$/ }).first().click();
   await page.getByLabel("Selling price (USD, incl. GST)").fill("1800");
@@ -60,7 +60,7 @@ test("AU calculator: custom price and declared value change the result", async (
 });
 
 test("AU calculator: the market stays AU whatever the URL says", async ({ page }) => {
-  await page.goto("/?m=UK");
+  await page.goto("/?v=calc&m=UK");
   await page.getByLabel("Product").fill("iphone");
   await page.getByRole("button", { name: /US\$/ }).first().click();
   await expect(page).toHaveURL(/m=AU/);
